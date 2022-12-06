@@ -6,6 +6,23 @@ import numpy as np
 
 # Use PYVENV in Development
 
+# ----------------------------
+
+def plot_group(a_group, df, title=None):
+    num_plots = len(a_group)
+    fig, axes = mp.subplots(nrows=num_plots, ncols=1, figsize=(12,6), sharex=True, sharey=True)
+    if title:
+        fig.suptitle( title )
+    for i, sensor in enumerate(a_group):
+        axes[i].plot(
+            df["Timestamp"].values,
+            df[sensor].values   
+        )
+        axes[i].set_title( str(sensor) )
+    fig.tight_layout()
+    
+# ----------------------------
+
 # Also read dist files. 
 
 mocap_filename = "mocap_valentijn/beach_repr_2b_velocity_M.tsv"
@@ -66,6 +83,7 @@ df = pd.DataFrame(df_rows, columns = column_names)
 df['x_LWristOut_vel_M_T'] = np.where( df["x_LWristOut_vel_M"] > 240, 240, 0 )
 print( df )
 
+'''
 # plot, with "x=0" interesting plot
 df.plot(
     x=0, #df["Time"],
@@ -74,8 +92,9 @@ df.plot(
     kind="line",
     figsize=(16, 8)
 )
+'''
 
-# ----------------------------
+# ----------------------------    
 
 # Read the dist data
 df_dists = pd.read_csv("beach_repr_2b_dists.tsv", sep="\t")
@@ -121,6 +140,8 @@ group_RFingers_M = ["x_RThumb1_vel_M", "x_RThumbTip_vel_M", "x_RIndex2_vel_M", "
                     "x_RMiddle2_vel_M", "x_RMiddleTip_vel_M", "x_RRing2_vel_M", "x_RRingTip_vel_M",
                     "x_RPinky2_vel_M", "x_RPinkyTip_vel_M"]
 
+plot_group( group_LHand_M, df )
+
 #group_LHand = ["x_LThumb1_vel_M", "x_LThumbTip_vel_M", "x_LIndex2_vel_M", "x_LIndexTip_vel_M",
 #               "x_LMiddle2_vel_M", "x_LMiddleTip_vel_M", "x_LRing2_vel_M", "x_LRingTip_vel_M",
 #               "x_LPinky2_vel_M", "x_LPinkyTip_vel_M"]
@@ -161,6 +182,7 @@ axes[1].plot(
     df_dists["x_RElbowOut"].values
 )
 axes[1].legend(loc="upper right")
+fig.tight_layout()
 
 # Another distances plot
 fig, axes = mp.subplots(nrows=2, ncols=1, figsize=(12,6), sharex=True, sharey=True)
@@ -175,6 +197,7 @@ for sensor in group_RArm:
         df_dists["Timestamp"].values,
         df_dists[sensor].values
 )
+fig.tight_layout()
 
 # ----------------------------
 
@@ -222,6 +245,7 @@ for sensor in group_LFingers_M:
 box = axes[1].get_position()
 axes[1].set_position([box.x0, box.y0 + box.height * 0.12, box.width, box.height * 0.88])
 axes[1].legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=6)
+fig.tight_layout()
 
 # Use "np.condition" to determine hand/finger/arm movements? (1/0 columns)
 
