@@ -151,29 +151,27 @@ axes[0].scatter(
     df_dists_t["x_LElbowOut_T"].values,
     s=siz, c=col
 )
+axes[0].legend(loc="upper right")
 axes[1].set_title("x_RElbowOut")
 axes[1].plot(
     df_dists["Timestamp"].values,
     df_dists["x_RElbowOut"].values
 )
+axes[1].legend(loc="upper right")
 
 # Another distances plot
-df_dists.plot(
-    title="group_RArm",
-    x="Timestamp",
-    #y=[1,2,3,4,5,6,7,8,9,10],
-    y=group_RArm, #["x_LArm", "x_RArm", "x_LHandOut", "x_RHandOut"],
-    kind="line",
-    figsize=(16, 8)
+fig, axes = mp.subplots(nrows=2, ncols=1, figsize=(12,6), sharex=True, sharey=True)
+fig.suptitle( "Distances Right and Left Arms" )
+for sensor in group_LArm:
+    axes[0].plot(
+        df_dists["Timestamp"].values,
+        df_dists[sensor].values
 )
-#axes[0].scatter(
-#    "Timestamp",
-#    "x_LWristOut_vel_M_T",
-#    marker='o',
-#    s=siz, c=col, #"red",
-#    data=df,
-#    label=""
-#)
+for sensor in group_RArm:
+    axes[1].plot(
+        df_dists["Timestamp"].values,
+        df_dists[sensor].values
+)
 
 # ----------------------------
 
@@ -200,7 +198,7 @@ axes[0].scatter(
 axes[0].legend(loc="upper right")
 '''
 
-for sensor in ["x_RThumb1_vel_M", "x_RThumbTip_vel_M", "x_RIndex2_vel_M", "x_RIndexTip_vel_M", "x_RMiddle2_vel_M", "x_RMiddleTip_vel_M", "x_RRing2_vel_M", "x_RRingTip_vel_M", "x_RPinky2_vel_M", "x_RPinkyTip_vel_M"]:
+for sensor in group_RFingers_M:
     axes[0].plot(
         "Timestamp",
         sensor,
@@ -211,12 +209,7 @@ box = axes[0].get_position()
 axes[0].set_position([box.x0, box.y0 + box.height * 0.12, box.width, box.height * 0.88])
 axes[0].legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=6)
 
-#axes[1].plot(
-#    "Timestamp",
-#    "x_LHandOut_vel_M",
-#    data=df
-#)
-for sensor in ["x_LThumb1_vel_M", "x_LThumbTip_vel_M", "x_LIndex2_vel_M", "x_LIndexTip_vel_M", "x_LMiddle2_vel_M", "x_LMiddleTip_vel_M", "x_LRing2_vel_M", "x_LRingTip_vel_M", "x_LPinky2_vel_M", "x_LPinkyTip_vel_M"]:
+for sensor in group_LFingers_M:
     axes[1].plot(
         "Timestamp",
         sensor,
