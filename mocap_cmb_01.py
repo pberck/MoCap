@@ -20,7 +20,26 @@ def plot_group(a_group, df, title=None):
         )
         axes[i].set_title( str(sensor) )
     fig.tight_layout()
-    
+
+# Same dataframes
+def plot_groups_lr(l_group, r_group, df, title=None):
+    num_plots = len(l_group) # assume same length
+    fig, axes = mp.subplots(nrows=num_plots, ncols=2, figsize=(12,12), sharex=True, sharey=True)
+    if title:
+        fig.suptitle( title )
+    for i in range(0, num_plots):
+        axes[i, 0].plot(
+            df["Timestamp"].values,
+            df[l_group[i]].values   
+        )
+        axes[i, 0].set_title(l_group[i])
+        axes[i, 1].plot(
+            df["Timestamp"].values,
+            df[r_group[i]].values   
+        )
+        axes[i, 1].set_title(r_group[i])
+    fig.tight_layout()
+
 # ----------------------------
 
 # Also read dist files. 
@@ -140,7 +159,10 @@ group_RFingers_M = ["x_RThumb1_vel_M", "x_RThumbTip_vel_M", "x_RIndex2_vel_M", "
                     "x_RMiddle2_vel_M", "x_RMiddleTip_vel_M", "x_RRing2_vel_M", "x_RRingTip_vel_M",
                     "x_RPinky2_vel_M", "x_RPinkyTip_vel_M"]
 
-plot_group( group_LHand_M, df )
+plot_group( group_LHand_M, df, title="Left Hand Sensors" )
+plot_group( group_RHand_M, df, title="Right Hand Sensors" )
+
+plot_groups_lr( group_LArm, group_RArm, df_dists )
 
 #group_LHand = ["x_LThumb1_vel_M", "x_LThumbTip_vel_M", "x_LIndex2_vel_M", "x_LIndexTip_vel_M",
 #               "x_LMiddle2_vel_M", "x_LMiddleTip_vel_M", "x_LRing2_vel_M", "x_LRingTip_vel_M",
