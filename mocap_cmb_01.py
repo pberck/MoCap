@@ -60,7 +60,7 @@ def plot_group_combined(a_group, a_df, title=None):
 
 # All sensors from two similar dataframes, one up, one down.
 def plot_group_combined_stacked(l_group, r_group, a_df, title=None):
-    fig, axes = mp.subplots(nrows=2, ncols=1, figsize=(6,12), sharex=True, sharey=True)
+    fig, axes = mp.subplots(nrows=2, ncols=1, figsize=(12,12), sharex=True, sharey=True)
     if title:
         fig.suptitle( title )
     for sensor in l_group:
