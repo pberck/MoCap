@@ -58,6 +58,23 @@ def plot_group_combined(a_group, a_df, title=None):
         )
     fig.tight_layout()
 
+# All sensors from two similar dataframes, one up, one down.
+def plot_group_combined_stacked(l_group, r_group, a_df, title=None):
+    fig, axes = mp.subplots(nrows=2, ncols=1, figsize=(6,12), sharex=True, sharey=True)
+    if title:
+        fig.suptitle( title )
+    for sensor in l_group:
+        axes[0].plot(
+            a_df["Timestamp"].values,
+            a_df[sensor].values
+        )
+    for sensor in r_group:
+        axes[1].plot(
+            a_df["Timestamp"].values,
+            a_df[sensor].values
+        )
+    fig.tight_layout()
+
 # ----------------------------
 
 # Also read dist files. 
@@ -288,6 +305,8 @@ fig.tight_layout()
 # Use "np.condition" to determine hand/finger/arm movements? (1/0 columns)
 
 plot_group_combined(group_LFingers_M, df, title="group combined") 
+
+plot_group_combined_stacked(group_LFingers_M, group_RFingers_M, df, title="group combined stacked")
 
 mp.show()
 '''
