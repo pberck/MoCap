@@ -6,40 +6,56 @@ import numpy as np
 
 # Use PYVENV in Development
 
+# maybe make a diagram with coloured lines from 0 to x seconds, for each sensor
+# a line if above a certain movement threshold.
+
 # ----------------------------
 
-def plot_group(a_group, df, title=None):
+# Each sensor in a separate plot
+def plot_group(a_group, a_df, title=None):
     num_plots = len(a_group)
     fig, axes = mp.subplots(nrows=num_plots, ncols=1, figsize=(12,6), sharex=True, sharey=True)
     if title:
         fig.suptitle( title )
     for i, sensor in enumerate(a_group):
         axes[i].plot(
-            df["Timestamp"].values,
-            df[sensor].values   
+            a_df["Timestamp"].values,
+            a_df[sensor].values
         )
         axes[i].set_title( str(sensor) )
     fig.tight_layout()
 
-# Same dataframes
-def plot_groups_lr(l_group, r_group, df, title=None):
+# Similar dataframes, one left, one right
+def plot_groups_lr(l_group, r_group, a_df, title=None):
     num_plots = len(l_group) # assume same length
     fig, axes = mp.subplots(nrows=num_plots, ncols=2, figsize=(12,6), sharex=True, sharey=True)
     if title:
         fig.suptitle( title )
     for i in range(0, num_plots):
         axes[i, 0].plot(
-            df["Timestamp"].values,
-            df[l_group[i]].values,
+            a_df["Timestamp"].values,
+            a_df[l_group[i]].values,
             'tab:green'
         )
         axes[i, 0].set_title(l_group[i])
         axes[i, 1].plot(
-            df["Timestamp"].values,
-            df[r_group[i]].values,
+            a_df["Timestamp"].values,
+            a_df[r_group[i]].values,
             'tab:cyan'
         )
         axes[i, 1].set_title(r_group[i])
+    fig.tight_layout()
+
+# All sensors in the same plot
+def plot_group_combined(a_group, a_df, title=None):
+    fig, axes = mp.subplots(nrows=1, ncols=1, figsize=(12,6), sharex=True, sharey=True)
+    if title:
+        fig.suptitle( title )
+    for sensor in a_group:
+        axes.plot(
+            a_df["Timestamp"].values,
+            a_df[sensor].values
+        )
     fig.tight_layout()
 
 # ----------------------------
@@ -168,12 +184,7 @@ plot_group( group_RHand_M, df, title="Right Hand Sensors" )
 
 plot_groups_lr( group_LArm[2:], group_RArm[2:], df_dists, title="Left and Right Arm" )
 
-#group_LHand = ["x_LThumb1_vel_M", "x_LThumbTip_vel_M", "x_LIndex2_vel_M", "x_LIndexTip_vel_M",
-#               "x_LMiddle2_vel_M", "x_LMiddleTip_vel_M", "x_LRing2_vel_M", "x_LRingTip_vel_M",
-#               "x_LPinky2_vel_M", "x_LPinkyTip_vel_M"]
-#group_RHand = ["x_RThumb1_vel_M", "x_RThumbTip_vel_M", "x_RIndex2_vel_M", "x_RIndexTip_vel_M",
-#               "x_RMiddle2_vel_M", "x_RMiddleTip_vel_M", "x_RRing2_vel_M", "x_RRingTip_vel_M",
-#               "x_RPinky2_vel_M", "x_RPinkyTip_vel_M"]
+#plot_group( group_RArm+group_RHand_M, pd.concat([df, df_dists]), title="TEST" )
 
 # Create a new dataframe with "distance moved across threshold" indicators.
 df_dists_t = pd.DataFrame()
@@ -250,6 +261,7 @@ axes[0].scatter(
 axes[0].legend(loc="upper right")
 '''
 
+# "two groups combined"
 for sensor in group_RFingers_M:
     axes[0].plot(
         "Timestamp",
@@ -274,6 +286,8 @@ axes[1].legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=6)
 fig.tight_layout()
 
 # Use "np.condition" to determine hand/finger/arm movements? (1/0 columns)
+
+plot_group_combined(group_LFingers_M, df, title="group combined") 
 
 mp.show()
 '''
