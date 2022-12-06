@@ -92,6 +92,7 @@ x_RAnkleOut, x_RArm, x_RElbowOut, x_RForefootIn, x_RForefootOut, x_RHandIn, x_RH
 x_SpineTop, x_WaistLBack, x_WaistLFront, x_WaistRBack, x_WaistRFront
 '''
 
+# From position data
 group_Head = ["x_BackL", "x_BackR", "x_Chest", "x_HeadFront", "x_HeadL", "x_HeadR", "x_HeadTop"]
 
 group_LFoot = ["x_LAnkleOut", "x_LForefootIn", "x_LForefootOut", "x_LHeelBack", "x_LKneeOut",
@@ -104,14 +105,27 @@ group_LArm = ["x_LShoulderBack", "x_LShoulderTop", "x_LArm", "x_LElbowOut", "x_L
 group_RArm = ["x_RShoulderBack", "x_RShoulderTop", "x_RArm", "x_RElbowOut", "x_RHandIn",
               "x_RHandOut", "x_RWristIn", "x_RWristOut" ]
 
-group_LHand = ["x_LThumb1_vel_M", "x_LThumbTip_vel_M", "x_LIndex2_vel_M", "x_LIndexTip_vel_M",
-               "x_LMiddle2_vel_M", "x_LMiddleTip_vel_M", "x_LRing2_vel_M", "x_LRingTip_vel_M",
-               "x_LPinky2_vel_M", "x_LPinkyTip_vel_M"]
-group_RHand = ["x_RThumb1_vel_M", "x_RThumbTip_vel_M", "x_RIndex2_vel_M", "x_RIndexTip_vel_M",
-               "x_RMiddle2_vel_M", "x_RMiddleTip_vel_M", "x_RRing2_vel_M", "x_RRingTip_vel_M",
-               "x_RPinky2_vel_M", "x_RPinkyTip_vel_M"]
+# From _velocity_M data
+group_LHand_M    = ["x_LWristOut_vel_M", "x_LWristIn_vel_M", "x_LHandOut_vel_M", "x_LHandIn_vel_M"]
 
-# Create a dataframe with "distance moved across threshold" indicators.
+group_LFingers_M = ["x_LThumb1_vel_M", "x_LThumbTip_vel_M", "x_LIndex2_vel_M", "x_LIndexTip_vel_M",
+                    "x_LMiddle2_vel_M", "x_LMiddleTip_vel_M", "x_LRing2_vel_M", "x_LRingTip_vel_M",
+                    "x_LPinky2_vel_M", "x_LPinkyTip_vel_M"]
+
+group_RHand_M    = ["x_RWristOut_vel_M", "x_RWristIn_vel_M", "x_RHandOut_vel_M", "x_RHandIn_vel_M"]
+
+group_RFingers_M = ["x_RThumb1_vel_M", "x_RThumbTip_vel_M", "x_RIndex2_vel_M", "x_RIndexTip_vel_M",
+                    "x_RMiddle2_vel_M", "x_RMiddleTip_vel_M", "x_RRing2_vel_M", "x_RRingTip_vel_M",
+                    "x_RPinky2_vel_M", "x_RPinkyTip_vel_M"]
+
+#group_LHand = ["x_LThumb1_vel_M", "x_LThumbTip_vel_M", "x_LIndex2_vel_M", "x_LIndexTip_vel_M",
+#               "x_LMiddle2_vel_M", "x_LMiddleTip_vel_M", "x_LRing2_vel_M", "x_LRingTip_vel_M",
+#               "x_LPinky2_vel_M", "x_LPinkyTip_vel_M"]
+#group_RHand = ["x_RThumb1_vel_M", "x_RThumbTip_vel_M", "x_RIndex2_vel_M", "x_RIndexTip_vel_M",
+#               "x_RMiddle2_vel_M", "x_RMiddleTip_vel_M", "x_RRing2_vel_M", "x_RRingTip_vel_M",
+#               "x_RPinky2_vel_M", "x_RPinkyTip_vel_M"]
+
+# Create a new dataframe with "distance moved across threshold" indicators.
 df_dists_t = pd.DataFrame()
 df_dists_t["Timestamp"] = df_dists["Timestamp"]
 
@@ -119,9 +133,11 @@ for sensor in group_LArm:
     df_dists_t[sensor+'_T'] = np.where( df_dists[sensor] > 1, 3, 0 )
 print( df_dists_t )
 
+# Plot distances
 fig, axes = mp.subplots(nrows=2, ncols=1, figsize=(12,6), sharex=True, sharey=True)
-fig.suptitle( "distances" )
+fig.suptitle( "Distances Right and Left Elbows" )
 
+# Field to test colour/size selection in plot.
 col = np.where(df_dists_t["x_LElbowOut_T"] > 1, 'r', 'b')
 siz = np.where(df_dists_t["x_LElbowOut_T"] > 1, 1, 0)
 
@@ -141,11 +157,11 @@ axes[1].plot(
     df_dists["x_RElbowOut"].values
 )
 
-
+# Another distances plot
 df_dists.plot(
     x="Timestamp",
     #y=[1,2,3,4,5,6,7,8,9,10],
-    y=["x_LArm", "x_RArm", "x_LHandOut", "x_RHandOut"],
+    y=group_RArm, #["x_LArm", "x_RArm", "x_LHandOut", "x_RHandOut"],
     kind="line",
     figsize=(16, 8)
 )
