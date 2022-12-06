@@ -93,7 +93,7 @@ x_SpineTop, x_WaistLBack, x_WaistLFront, x_WaistRBack, x_WaistRFront
 '''
 
 # From position data
-group_Head = ["x_BackL", "x_BackR", "x_Chest", "x_HeadFront", "x_HeadL", "x_HeadR", "x_HeadTop"]
+group_Head = ["x_HeadFront", "x_HeadL", "x_HeadR", "x_HeadTop"]
 
 group_LFoot = ["x_LAnkleOut", "x_LForefootIn", "x_LForefootOut", "x_LHeelBack", "x_LKneeOut",
                "x_LShin", "x_LThigh", "x_LToeTip"]
@@ -104,6 +104,9 @@ group_LArm = ["x_LShoulderBack", "x_LShoulderTop", "x_LArm", "x_LElbowOut", "x_L
               "x_LHandOut", "x_LWristIn", "x_LWristOut" ]
 group_RArm = ["x_RShoulderBack", "x_RShoulderTop", "x_RArm", "x_RElbowOut", "x_RHandIn",
               "x_RHandOut", "x_RWristIn", "x_RWristOut" ]
+
+group_Body = ["x_BackL", "x_BackR", "x_Chest", "x_SpineTop", 
+              "x_WaistLBack", "x_WaistLFront", "x_WaistRBack", "x_WaistRFront"]
 
 # From _velocity_M data
 group_LHand_M    = ["x_LWristOut_vel_M", "x_LWristIn_vel_M", "x_LHandOut_vel_M", "x_LHandIn_vel_M"]
