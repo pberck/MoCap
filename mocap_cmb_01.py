@@ -159,6 +159,7 @@ axes[1].plot(
 
 # Another distances plot
 df_dists.plot(
+    title="group_RArm",
     x="Timestamp",
     #y=[1,2,3,4,5,6,7,8,9,10],
     y=group_RArm, #["x_LArm", "x_RArm", "x_LHandOut", "x_RHandOut"],
