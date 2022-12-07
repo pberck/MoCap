@@ -1,8 +1,10 @@
 import pandas as pd
 import math
 import matplotlib.pyplot as mp
+import matplotlib as mpl
 import matplotlib.dates as dates
 import numpy as np
+from matplotlib import cm
 
 # Use PYVENV in Development
 
@@ -59,8 +61,8 @@ def plot_group_combined(a_group, a_df, title=None):
     fig.tight_layout()
 
 # All sensors from two similar dataframes, one up, one down.
-def plot_group_combined_stacked(l_group, r_group, a_df, title=None):
-    fig, axes = mp.subplots(nrows=2, ncols=1, figsize=(12,12), sharex=True, sharey=True)
+def plot_groups_combined_stacked(l_group, r_group, a_df, title=None):
+    fig, axes = mp.subplots(nrows=2, ncols=1, figsize=(12,6), sharex=True, sharey=True)
     if title:
         fig.suptitle( title )
     for sensor in l_group:
@@ -137,17 +139,6 @@ df = pd.DataFrame(df_rows, columns = column_names)
 df['x_LWristOut_vel_M_T'] = np.where( df["x_LWristOut_vel_M"] > 240, 240, 0 )
 print( df )
 
-'''
-# plot, with "x=0" interesting plot
-df.plot(
-    x=0, #df["Time"],
-    #y=[1,2,3,4,5,6,7,8,9,10],
-    y=[1,2, 5,6], #["x_LWristOut_vel_M"],
-    kind="line",
-    figsize=(16, 8)
-)
-'''
-
 # ----------------------------    
 
 # Read the dist data
@@ -199,6 +190,8 @@ group_RFingers_M = ["x_RThumb1_vel_M", "x_RThumbTip_vel_M", "x_RIndex2_vel_M", "
 plot_group( group_LHand_M, df, title="Left Hand Sensors" )
 plot_group( group_RHand_M, df, title="Right Hand Sensors" )
 
+plot_group( group_Body, df_dists, title="Body" )
+
 plot_groups_lr( group_LArm[2:], group_RArm[2:], df_dists, title="Left and Right Arm" )
 
 #plot_group( group_RArm+group_RHand_M, pd.concat([df, df_dists]), title="TEST" )
@@ -218,10 +211,11 @@ fig.suptitle( "Distances Right and Left Elbows" )
 # Field to test colour/size selection in plot.
 col = np.where(df_dists_t["x_LElbowOut_T"] > 1, 'r', 'b')
 siz = np.where(df_dists_t["x_LElbowOut_T"] > 1, 1, 0)
+cmap, norm = mpl.colors.from_levels_and_colors([0, 100, 1000], ['r', 'k'])
 
 axes[0].plot(
     df_dists["Timestamp"].values,
-    df_dists["x_LElbowOut"].values
+    df_dists["x_LElbowOut"].values,
 )
 axes[0].set_title("x_LElbowOut and marker")
 axes[0].scatter(
@@ -230,6 +224,17 @@ axes[0].scatter(
     s=siz, c=col
 )
 axes[0].legend(loc="upper right")
+
+axes[0].vlines(df_dists["Timestamp"].values,
+               0, 2*df_dists_t["x_LElbowOut_T"].values, cmap='bwr') #cmap)
+
+mp.show()
+sys.exit(0)
+
+#mp.imshow(df_dists["x_LElbowOut"].values, cmap='jet')
+#mp.pcolormesh( [df_dists["x_LElbowOut"]], cmap='Greys', shading='gouraud')
+
+
 axes[1].set_title("x_RElbowOut")
 axes[1].plot(
     df_dists["Timestamp"].values,
@@ -237,6 +242,8 @@ axes[1].plot(
 )
 axes[1].legend(loc="upper right")
 fig.tight_layout()
+
+#plot_group( ["x_LElbowOut", "x_RElbowOut"], df_dists, title="Left and Right Elbow" )
 
 # Another distances plot
 fig, axes = mp.subplots(nrows=2, ncols=1, figsize=(12,6), sharex=True, sharey=True)
@@ -256,28 +263,8 @@ fig.tight_layout()
 # ----------------------------
 
 # Plot
-fig, axes = mp.subplots(nrows=2, ncols=1, figsize=(16,8), sharex=True, sharey=True)
-
-''' see mocap_vel00.py
-axes[0].plot(
-    "Timestamp",
-    "x_LWristOut_vel_M",
-    data=df,
-    label="LW"
-)
-col = np.where(df["x_LWristOut_vel_M_T"]<200,'b', 'r')
-siz = np.where(df["x_LWristOut_vel_M_T"]<200,0,1)
-axes[0].scatter(
-    "Timestamp",
-    "x_LWristOut_vel_M_T",
-    marker='o',
-    s=siz, c=col, #"red",
-    data=df,
-    label=""
-)
-axes[0].legend(loc="upper right")
 '''
-
+fig, axes = mp.subplots(nrows=2, ncols=1, figsize=(12,6), sharex=True, sharey=True)
 # "two groups combined"
 for sensor in group_RFingers_M:
     axes[0].plot(
@@ -287,9 +274,8 @@ for sensor in group_RFingers_M:
     )
 #axes[1].legend(loc="upper right")
 box = axes[0].get_position()
-axes[0].set_position([box.x0, box.y0 + box.height * 0.12, box.width, box.height * 0.88])
+#axes[0].set_position([box.x0, box.y0 + box.height * 0.12, box.width, box.height * 0.88])
 axes[0].legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=6)
-
 for sensor in group_LFingers_M:
     axes[1].plot(
         "Timestamp",
@@ -298,15 +284,15 @@ for sensor in group_LFingers_M:
     )
 #axes[1].legend(loc="upper right")
 box = axes[1].get_position()
-axes[1].set_position([box.x0, box.y0 + box.height * 0.12, box.width, box.height * 0.88])
+#axes[1].set_position([box.x0, box.y0 + box.height * 0.12, box.width, box.height * 0.88])
 axes[1].legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=6)
 fig.tight_layout()
+'''
+plot_groups_combined_stacked(group_LFingers_M, group_RFingers_M, df, title="Left and Right Fingers")
 
 # Use "np.condition" to determine hand/finger/arm movements? (1/0 columns)
 
 plot_group_combined(group_LFingers_M, df, title="group combined") 
-
-plot_group_combined_stacked(group_LFingers_M, group_RFingers_M, df, title="group combined stacked")
 
 mp.show()
 '''
