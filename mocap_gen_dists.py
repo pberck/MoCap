@@ -1,6 +1,7 @@
 import pandas as pd
 import math
 import argparse
+import os
 
 # Use PYVENV in Development
 
@@ -9,8 +10,13 @@ import argparse
 mocap_filename = "mocap_valentijn/beach_repr_2b.tsv"
 
 parser = argparse.ArgumentParser()
-parser.add_argument( "-f", "--filename", help="MoCap tsv file (3D positions)." )
+parser.add_argument( "-f", "--filename", help="MoCap tsv file (3D positions).",
+                     default="mocap_valentijn/beach_repr_2b.tsv" )
 args = parser.parse_args()
+
+filepath_bits  =  os.path.split( args.filename )
+dists_filename = os.path.join( filepath_bits[0], filepath_bits[1][:-4] + "_dists.tsv" ) # Note, no error checking
+print( filepath_bits, dists_filename )
 
 '''
 (Pyvenv) pberck@ip30-163 MoCap % head beach_repr_2b.tsv 
@@ -34,7 +40,7 @@ df      = None
 df_rows = []
 lnum    = 0
 freq    = 200 # parse from file header
-with open(mocap_filename, "r") as f:
+with open(args.filename, "r") as f:
     for line in f:
         bits = line.split()
         #print( lnum, len(bits) )
@@ -85,12 +91,10 @@ df_dists     = pd.DataFrame(
 )
 print( df_dists.head() )
 
-
 # Save it
-print( "Saving:", "beach_repr_2b_dists.tsv" )
-df_dists.to_csv("beach_repr_2b_dists.tsv", index=False, sep="\t")
-
-
-# Add time
-#df_dists['Time'] = pd.to_datetime(df_dists['Timestamp'])
-#print( df_dists )
+df_dists.to_csv(
+    dists_filename,
+    index=False,
+    sep="\t"
+)
+print( "Saved:", dists_filename )
