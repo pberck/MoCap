@@ -70,7 +70,7 @@ def dist3d(v0, v1):
 df_distances  = []
 df_dists_rows = [ [0.0] * len(column_names) ] # init with zeros for timestamp 000000
 row           = df_rows[0]
-prev_triplets = [row[i:i + 3] for i in range(1,len(row)-1, 3)]
+prev_triplets = [ row[i:i + 3] for i in range(1,len(row)-1, 3) ]
 #print( prev_triplets )
 for row in df_rows[1:]:
     #print( row )
@@ -83,7 +83,7 @@ for row in df_rows[1:]:
     prev_triplets = triplets
     df_dists_rows.append( new_row )
 
-# distances, use column names b/c one dist per "triplet", we add timestamp
+# Distances, use original column names b/c only one dist per "triplet", we add timestamp.
 column_names = ["Timestamp"] + column_names
 df_dists     = pd.DataFrame(
     df_dists_rows,

@@ -9,19 +9,22 @@ from matplotlib import cm
 import argparse
 
 # Use PYVENV in Development
+# (PYVENV) pberck@ip30-163 MoCap %
+# python mocap_03.py -f mocap_valentijn/beach_repr_2b_velocity_M.tsv -d mocap_valentijn/beach_repr_2b_dists.tsv
 
 # maybe make a diagram with coloured lines from 0 to x seconds, for each sensor
 # a line if above a certain movement threshold.
 
+# Resample!
+
 # ----------------------------
 
 parser = argparse.ArgumentParser()
-parser.add_argument( "-f", "--filename", help="MoCap tsv file (velocities)." )
-parser.add_argument( "-d", "--distfilename", help="MoCap tsv file (distances)." )
+parser.add_argument( "-f", "--filename",
+                     help="MoCap tsv file (velocities)." )
+parser.add_argument( "-d", "--distsfilename",
+                     help="MoCap tsv file (distances, from mocap_gen_distances.py)." )
 args = parser.parse_args()
-
-# Also read dist files. 
-mocap_filename = "mocap_valentijn/beach_repr_2b_velocity_M.tsv"
 
 '''
 ls mocap_valentijn/*tsv
@@ -35,7 +38,7 @@ ls *tsv
 
 # ----------------------------
 
-# Each sensor in a separate plot
+# Each sensor in a separate plot.
 def plot_group(a_group, a_df, title=None):
     num_plots = len(a_group)
     fig, axes = mp.subplots(nrows=num_plots, ncols=1, figsize=(12,6), sharex=True, sharey=True)
@@ -49,7 +52,7 @@ def plot_group(a_group, a_df, title=None):
         axes[i].set_title( str(sensor) )
     fig.tight_layout()
 
-# Similar dataframes, one left, one right
+# Similar dataframes, one left, one right.
 def plot_groups_lr(l_group, r_group, a_df, title=None):
     num_plots = len(l_group) # assume same length
     fig, axes = mp.subplots(nrows=num_plots, ncols=2, figsize=(12,6), sharex=True, sharey=True)
@@ -70,7 +73,7 @@ def plot_groups_lr(l_group, r_group, a_df, title=None):
         axes[i, 1].set_title(r_group[i])
     fig.tight_layout()
 
-# All sensors in the same plot
+# All sensors in the same plot.
 def plot_group_combined(a_group, a_df, title=None):
     fig, axes = mp.subplots(nrows=1, ncols=1, figsize=(12,6), sharex=True, sharey=True)
     if title:
@@ -83,7 +86,7 @@ def plot_group_combined(a_group, a_df, title=None):
     fig.tight_layout()
 
 # All sensors from two similar dataframes, one up, one down.
-def plot_groups_combined_stacked(l_group, r_group, a_df, title=None):
+def plot_groups_combined_stacked(l_group, r_group, a_df, title=None, subtitles=None):
     fig, axes = mp.subplots(nrows=2, ncols=1, figsize=(12,6), sharex=True, sharey=True)
     if title:
         fig.suptitle( title )
@@ -97,6 +100,9 @@ def plot_groups_combined_stacked(l_group, r_group, a_df, title=None):
             a_df["Timestamp"].values,
             a_df[sensor].values
         )
+    if subtitles:
+        for i, subtitle in enumerate(subtitles):
+            axes[i].set_title( subtitles[i] )
     fig.tight_layout()
 
 # ----------------------------
@@ -116,13 +122,12 @@ DATA_TYPES	x_LWristOut_vel_M	X_LWristIn_vel_M	x_LHandOut_vel_M	x_LHandIn_vel_M	x
 2	0.00500	12.438	14.483	73.739	109.118	12.927	11.315	11.895	12.532	14.295	14.165	73.827	265.273	191.557	22.159	16.281	16.797	19.674	26.238	161.599	184.912	109.435	119.367	142.256	161.760	164.861	208.077	124.859	144.613
 '''
 
-# Data is index plus timestamp plus 64*3 data points?
-
-df = None
+# Read velocities file.
+df      = None
 df_rows = []
-lnum = 0
-freq = 200 # available in file header
-with open(mocap_filename, "r") as f:
+lnum    = 0
+freq    = 200 # Get from file header.
+with open(args.filename, "r") as f:
     for line in f:
         bits = line.split()
         #print( lnum, len(bits) )
@@ -130,42 +135,53 @@ with open(mocap_filename, "r") as f:
             if bits[0] == "FREQUENCY":
                 freq = int(bits[1])
             if bits[0] == "DATA_TYPES":
-                column_names = bits # We add a Timestamp later to this one too
+                column_names = bits # We add a Timestamp later to this one too.
                 print( column_names )
         if len(bits) > 15 and lnum > 7:
             bits = [ float(x) for x in bits ]
             df_rows.append( bits[1:] ) #skip index number
         lnum += 1
 
+# Change the name of the first column to Timestamp.
+column_names[0] = "Timestamp"
+
+# Create the dataframe.
+df = pd.DataFrame(
+    df_rows,
+    columns=column_names
+)
+print( df.head() )
+#df['Time'] = pd.to_datetime(df['Timestamp']) # not used
+
+# Read the distance data
+df_dists = pd.read_csv(
+    args.distsfilename,
+    sep="\t"
+)
+print( df_dists.head() )
+
+#df['x_LWristOut_vel_M_T'] = np.where( df["x_LWristOut_vel_M"] > 240, 240, 0 )
+
+# ----------------------------
+
 #for x in column_names:
 #    print( x )
 # check for "finger movement only", "hand movement", "arm movement" (not in this data, use distances?)
 
-group_LHand    = ["x_LWristOut_vel_M", "x_LWristIn_vel_M", "x_LHandOut_vel_M", "x_LHandIn_vel_M"]
-group_LFingers = ["x_LThumb1_vel_M", "x_LThumbTip_vel_M", "x_LIndex2_vel_M", "x_LIndexTip_vel_M",
-                  "x_LMiddle2_vel_M", "x_LMiddleTip_vel_M", "x_LRing2_vel_M", "x_LRingTip_vel_M",
-                  "x_LPinky2_vel_M", "x_LPinkyTip_vel_M"]
+group_LHand_M    = ["x_LWristOut_vel_M", "x_LWristIn_vel_M", "x_LHandOut_vel_M", "x_LHandIn_vel_M"]
 
-group_RHand    = ["x_RWristOut_vel_M", "x_RWristIn_vel_M", "x_RHandOut_vel_M", "x_RHandIn_vel_M"]
-group_RFingers = ["x_RThumb1_vel_M", "x_RThumbTip_vel_M", "x_RIndex2_vel_M", "x_RIndexTip_vel_M",
-                  "x_RMiddle2_vel_M", "x_RMiddleTip_vel_M", "x_RRing2_vel_M", "x_RRingTip_vel_M",
-                  "x_RPinky2_vel_M", "x_RPinkyTip_vel_M"]
+group_LFingers_M = ["x_LThumb1_vel_M", "x_LThumbTip_vel_M", "x_LIndex2_vel_M", "x_LIndexTip_vel_M",
+                    "x_LMiddle2_vel_M", "x_LMiddleTip_vel_M", "x_LRing2_vel_M", "x_LRingTip_vel_M",
+                    "x_LPinky2_vel_M", "x_LPinkyTip_vel_M"]
 
+group_RHand_M    = ["x_RWristOut_vel_M", "x_RWristIn_vel_M", "x_RHandOut_vel_M", "x_RHandIn_vel_M"]
 
-column_names[0] = "Timestamp"
-df = pd.DataFrame(df_rows, columns = column_names)
-#df['Time'] = pd.to_datetime(df['Timestamp']) # not used
-df['x_LWristOut_vel_M_T'] = np.where( df["x_LWristOut_vel_M"] > 240, 240, 0 )
-print( df )
+group_RFingers_M = ["x_RThumb1_vel_M", "x_RThumbTip_vel_M", "x_RIndex2_vel_M", "x_RIndexTip_vel_M",
+                    "x_RMiddle2_vel_M", "x_RMiddleTip_vel_M", "x_RRing2_vel_M", "x_RRingTip_vel_M",
+                    "x_RPinky2_vel_M", "x_RPinkyTip_vel_M"]
 
-# ----------------------------    
-
-# Read the dist data
-df_dists = pd.read_csv("beach_repr_2b_dists.tsv", sep="\t")
-print( df_dists )
-
-#print( ",".join(sorted(df_dists.columns)) )
 '''
+print( ",".join(sorted(df_dists.columns)) )
 x_BackL, x_BackR, x_Chest, x_HeadFront, x_HeadL, x_HeadR, x_HeadTop, 
 
 x_LAnkleOut, x_LArm, x_LElbowOut, x_LForefootIn, x_LForefootOut, x_LHandIn, x_LHandOut, x_LHeelBack, x_LIndex2, x_LIndexTip, x_LKneeOut, x_LMiddle2, x_LMiddleTip, x_LPinky2, x_LPinkyTip, x_LRing2, x_LRingTip, x_LShin, x_LShoulderBack, x_LShoulderTop, x_LThigh, x_LThumb1, x_LThumbTip, x_LToeTip, x_LWristIn, x_LWristOut, 
@@ -175,7 +191,7 @@ x_RAnkleOut, x_RArm, x_RElbowOut, x_RForefootIn, x_RForefootOut, x_RHandIn, x_RH
 x_SpineTop, x_WaistLBack, x_WaistLFront, x_WaistRBack, x_WaistRFront
 '''
 
-# From position data
+# A few ad hoc distance groups.
 group_Head = ["x_HeadFront", "x_HeadL", "x_HeadR", "x_HeadTop"]
 
 group_LFoot = ["x_LAnkleOut", "x_LForefootIn", "x_LForefootOut", "x_LHeelBack", "x_LKneeOut",
@@ -191,31 +207,19 @@ group_RArm = ["x_RShoulderBack", "x_RShoulderTop", "x_RArm", "x_RElbowOut", "x_R
 group_Body = ["x_BackL", "x_BackR", "x_Chest", "x_SpineTop", 
               "x_WaistLBack", "x_WaistLFront", "x_WaistRBack", "x_WaistRFront"]
 
-# From _velocity_M data
-group_LHand_M    = ["x_LWristOut_vel_M", "x_LWristIn_vel_M", "x_LHandOut_vel_M", "x_LHandIn_vel_M"]
-
-group_LFingers_M = ["x_LThumb1_vel_M", "x_LThumbTip_vel_M", "x_LIndex2_vel_M", "x_LIndexTip_vel_M",
-                    "x_LMiddle2_vel_M", "x_LMiddleTip_vel_M", "x_LRing2_vel_M", "x_LRingTip_vel_M",
-                    "x_LPinky2_vel_M", "x_LPinkyTip_vel_M"]
-
-group_RHand_M    = ["x_RWristOut_vel_M", "x_RWristIn_vel_M", "x_RHandOut_vel_M", "x_RHandIn_vel_M"]
-
-group_RFingers_M = ["x_RThumb1_vel_M", "x_RThumbTip_vel_M", "x_RIndex2_vel_M", "x_RIndexTip_vel_M",
-                    "x_RMiddle2_vel_M", "x_RMiddleTip_vel_M", "x_RRing2_vel_M", "x_RRingTip_vel_M",
-                    "x_RPinky2_vel_M", "x_RPinkyTip_vel_M"]
-
 # Group plots
 
 plot_group( group_LHand_M, df, title="Left Hand Sensors" )
 plot_group( group_RHand_M, df, title="Right Hand Sensors" )
 
-plot_group( group_Body, df_dists, title="Body" )
+#plot_group( group_Body, df_dists, title="Body" )
 
-plot_groups_lr( group_LArm[2:], group_RArm[2:], df_dists, title="Left and Right Arm" )
+plot_groups_lr( group_LArm, group_RArm, df_dists, title="Left and Right Arm" )
 
 #plot_group( group_RArm+group_RHand_M, pd.concat([df, df_dists]), title="TEST" )
 
 # Create a new dataframe with "distance moved across threshold" indicators.
+# Determine threshold through statistical analysis?
 df_dists_t = pd.DataFrame()
 df_dists_t["Timestamp"] = df_dists["Timestamp"]
 
@@ -271,7 +275,7 @@ rescale = lambda y: (y - np.min(y)) / (np.max(y) - np.min(y))
 axes[1].bar(
     df_dists["Timestamp"].values,
     df_dists_t["x_LElbowOut_T"].values,
-    color=my_cmap(rescale(df_dists["x_LElbowOut"].values))
+    color=my_cmap( rescale(df_dists["x_LElbowOut"].values) )
     #s=siz, c=col,
     #c=df_dists["x_LElbowOut"].values, cmap='viridis'
 )
@@ -288,6 +292,7 @@ fig.tight_layout()
 
 #plot_group( ["x_LElbowOut", "x_RElbowOut"], df_dists, title="Left and Right Elbow" )
 
+'''
 # Another distances plot
 fig, axes = mp.subplots(nrows=2, ncols=1, figsize=(12,6), sharex=True, sharey=True)
 fig.suptitle( "Distances Right and Left Arms" )
@@ -302,6 +307,7 @@ for sensor in group_RArm:
         df_dists[sensor].values
 )
 fig.tight_layout()
+'''
 
 # ----------------------------
 
@@ -331,11 +337,13 @@ box = axes[1].get_position()
 axes[1].legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=6)
 fig.tight_layout()
 '''
-plot_groups_combined_stacked(group_LFingers_M, group_RFingers_M, df, title="Left and Right Fingers")
+plot_groups_combined_stacked(group_LFingers_M, group_RFingers_M, df,
+                             title="Left and Right Fingers",
+                             subtitles=["Left", "Right"])
 
 # Use "np.condition" to determine hand/finger/arm movements? (1/0 columns)
 
-plot_group_combined(group_LFingers_M, df, title="group combined") 
+plot_group_combined(group_LFingers_M, df, title="LFingers_M combined") 
 
 mp.show()
 '''
