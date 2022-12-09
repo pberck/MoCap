@@ -81,8 +81,10 @@ def plot_group_combined(a_group, a_df, title=None):
     for sensor in a_group:
         axes.plot(
             a_df["Timestamp"].values,
-            a_df[sensor].values
+            a_df[sensor].values,
+            label=str(sensor)
         )
+    axes.legend(loc="upper right", fontsize=8)
     fig.tight_layout()
 
 # All sensors from two similar dataframes, one up, one down.
@@ -93,13 +95,17 @@ def plot_groups_combined_stacked(l_group, r_group, a_df, title=None, subtitles=N
     for sensor in l_group:
         axes[0].plot(
             a_df["Timestamp"].values,
-            a_df[sensor].values
+            a_df[sensor].values,
+            label=str(sensor)
         )
+    axes[0].legend(loc="upper right", fontsize=8)
     for sensor in r_group:
         axes[1].plot(
             a_df["Timestamp"].values,
-            a_df[sensor].values
+            a_df[sensor].values,
+            label=str(sensor)
         )
+    axes[1].legend(loc="upper right", fontsize=8)
     if subtitles:
         for i, subtitle in enumerate(subtitles):
             axes[i].set_title( subtitles[i] )
