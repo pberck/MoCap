@@ -4,7 +4,9 @@ import matplotlib.pyplot as mp
 import matplotlib as mpl
 import matplotlib.dates as dates
 import numpy as np
+from matplotlib.colors import Normalize
 from matplotlib import cm
+import argparse
 
 # Use PYVENV in Development
 
@@ -12,6 +14,20 @@ from matplotlib import cm
 # a line if above a certain movement threshold.
 
 # ----------------------------
+
+parser = argparse.ArgumentParser()
+parser.add_argument( "-H", "--home", help="Home team" )
+parser.add_argument( "-A", "--away", help="Away team" )
+parser.add_argument( "-G", "--group", action='append', help="Show group(s)", default=[] )
+parser.add_argument( "-S", "--seed", help="Random seed", default=0, type=int )
+parser.add_argument( "--play", help="Simulate play matches", default=100, type=int )
+parser.add_argument( "--sim", help="Simulate sim matches", default=10, type=int )
+parser.add_argument( "--random", help="Simulate random sim matches", action="store_true" )
+parser.add_argument( "--exhaustive", help="Simulate random sim matches from set", action="store_true" )
+parser.add_argument( "--result", action='append', help="Add a match", default=[])
+parser.add_argument( "--rounds", help="Continue after groups", action="store_true" )
+args = parser.parse_args()
+
 
 # Each sensor in a separate plot
 def plot_group(a_group, a_df, title=None):
@@ -221,25 +237,49 @@ axes[0].set_title("x_LElbowOut and marker")
 axes[0].scatter(
     df_dists["Timestamp"].values,
     df_dists_t["x_LElbowOut_T"].values,
-    s=siz, c=col
+    s=siz, #c=col,
+    cmap='viridis'
 )
 axes[0].legend(loc="upper right")
 
 axes[0].vlines(df_dists["Timestamp"].values,
-               0, 2*df_dists_t["x_LElbowOut_T"].values, cmap='bwr') #cmap)
+               0, 2*df_dists_t["x_LElbowOut_T"].values) # colour according to real value?
 
-mp.show()
-sys.exit(0)
+axes[0].scatter(
+    df_dists["Timestamp"].values,
+    df_dists_t["x_LElbowOut_T"].values,
+    s=siz, c=col,
+    #c=df_dists["x_LElbowOut"].values, cmap='viridis'
+)
+
+#x, y = axes[1].pcolormesh(
+#    df_dists["Timestamp"].values,
+#    1,
+#    df_dists["x_LElbowOut"].values,
+#    cmap='RdBu', vmin=0, vmax=10)
+
+## Make it 2D? on the y axis all the signals/sensors, and a colour value for the x-value of sensor
 
 #mp.imshow(df_dists["x_LElbowOut"].values, cmap='jet')
 #mp.pcolormesh( [df_dists["x_LElbowOut"]], cmap='Greys', shading='gouraud')
 
-
+my_cmap = mp.get_cmap("viridis")
+rescale = lambda y: (y - np.min(y)) / (np.max(y) - np.min(y))
+axes[1].bar(
+    df_dists["Timestamp"].values,
+    df_dists_t["x_LElbowOut_T"].values,
+    color=my_cmap(rescale(df_dists["x_LElbowOut"].values))
+    #s=siz, c=col,
+    #c=df_dists["x_LElbowOut"].values, cmap='viridis'
+)
+    
+'''
 axes[1].set_title("x_RElbowOut")
 axes[1].plot(
     df_dists["Timestamp"].values,
     df_dists["x_RElbowOut"].values
 )
+'''
 axes[1].legend(loc="upper right")
 fig.tight_layout()
 

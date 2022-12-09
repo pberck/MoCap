@@ -16,9 +16,24 @@ import argparse
 # ----------------------------
 
 parser = argparse.ArgumentParser()
-parser.add_argument( "-f", "--filename", help="MoCap tsv file." )
+parser.add_argument( "-f", "--filename", help="MoCap tsv file (velocities)." )
+parser.add_argument( "-d", "--distfilename", help="MoCap tsv file (distances)." )
 args = parser.parse_args()
 
+# Also read dist files. 
+mocap_filename = "mocap_valentijn/beach_repr_2b_velocity_M.tsv"
+
+'''
+ls mocap_valentijn/*tsv
+  mocap_valentijn/beach_repr_2b.tsv		mocap_valentijn/beach_repr_2b_ang_acc_RH.tsv
+  mocap_valentijn/beach_repr_2b_ang_acc_LH.tsv	mocap_valentijn/beach_repr_2b_velocity_M.tsv
+
+ls *tsv
+  beach_repr_2b.tsv		beach_repr_2b_ang_acc_RH.tsv	beach_repr_2b_velocity_M.tsv
+  beach_repr_2b_ang_acc_LH.tsv	beach_repr_2b_dists.tsv
+'''
+
+# ----------------------------
 
 # Each sensor in a separate plot
 def plot_group(a_group, a_df, title=None):
@@ -86,9 +101,6 @@ def plot_groups_combined_stacked(l_group, r_group, a_df, title=None):
 
 # ----------------------------
 
-# Also read dist files. 
-
-mocap_filename = "mocap_valentijn/beach_repr_2b_velocity_M.tsv"
 
 '''
 (PYVENV) pberck@ip30-163 MoCap % head beach_repr_2b_velocity_M.tsv
