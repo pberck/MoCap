@@ -235,7 +235,7 @@ print( df_dists.head() )
 
 eaf = pympi.Elan.Eaf(file_path="mocap_valentijn/beach_repr_2.eaf", author='pympi')
 
-for sensor in group_LArm+group_RArm:
+for sensor in ["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut"]:# group_LArm+group_RArm:
     dist_max = df_dists[sensor].max()
     dist_min = df_dists[sensor].min()
     print( sensor, dist_min, dist_max )
