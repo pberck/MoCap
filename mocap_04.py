@@ -184,7 +184,7 @@ group_LFingers_M = ["x_LThumb1_vel_M", "x_LThumbTip_vel_M", "x_LIndex2_vel_M", "
                     "x_LMiddle2_vel_M", "x_LMiddleTip_vel_M", "x_LRing2_vel_M", "x_LRingTip_vel_M",
                     "x_LPinky2_vel_M", "x_LPinkyTip_vel_M"]
 
-group_RHand_M    = ["x_RWristOut_vel_M", "x_RWristIn_vel_M", "x_RHandOut_vel_M", "x_RHandIn_vel_M"]
+group_RHand_M    = ["X_RWristOut_vel_M", "x_RWristIn_vel_M", "x_RHandOut_vel_M", "x_RHandIn_vel_M"]
 
 group_RFingers_M = ["x_RThumb1_vel_M", "x_RThumbTip_vel_M", "x_RIndex2_vel_M", "x_RIndexTip_vel_M",
                     "x_RMiddle2_vel_M", "x_RMiddleTip_vel_M", "x_RRing2_vel_M", "x_RRingTip_vel_M",
@@ -209,9 +209,9 @@ group_LFoot = ["x_LAnkleOut", "x_LForefootIn", "x_LForefootOut", "x_LHeelBack", 
 group_RFoot = ["x_RAnkleOut", "x_RForefootIn", "x_RForefootOut", "x_RHeelBack", "x_RKneeOut",
                "x_RShin", "x_RThigh", "x_RToeTip"]
 
-group_LArm = ["x_LShoulderBack", "x_LShoulderTop", "x_LArm", "x_LElbowOut", "x_LHandIn",
+group_LArm = ["X_LShoulderBack", "x_LShoulderTop", "x_LArm", "x_LElbowOut", "x_LHandIn",
               "x_LHandOut", "x_LWristIn", "x_LWristOut" ]
-group_RArm = ["x_RShoulderBack", "x_RShoulderTop", "x_RArm", "x_RElbowOut", "x_RHandIn",
+group_RArm = ["X_RShoulderBack", "x_RShoulderTop", "x_RArm", "x_RElbowOut", "x_RHandIn",
               "x_RHandOut", "x_RWristIn", "x_RWristOut" ]
 
 group_Body = ["x_BackL", "x_BackR", "x_Chest", "x_SpineTop", 
@@ -233,11 +233,21 @@ print( df_dists.head() )
 # maybe group the st/et's in a new trier, take the "max" extent over the columns to catch
 # "group" movement -> resampling helps here!
 
+# Take several sensors, put values in one timeseries to "collapse" to one dimension
+# df['total']= df.iloc[:, -4:-1].sum(axis=1)
+# col_list= list(df)
+# col_list.remove('english')
+# df['Sum'] = df[col_list].sum(axis=1)
+
+df_dists['LATotal'] = df_dists[["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut"]].sum(axis=1)
+df_dists['RATotal'] = df_dists[["x_RHandIn", "x_RHandOut", "x_RWristIn", "x_RWristOut"]].sum(axis=1)
+
 eaf = pympi.Elan.Eaf(file_path="mocap_valentijn/beach_repr_2.eaf", author='pympi')
 
-for sensor in ["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut",
-               "x_RHandIn", "x_RHandOut", "x_RWristIn", "x_RWristOut",
-               "x_WaistLBack", "x_WaistRBack"]:# group_LArm+group_RArm:
+for sensor in ["LATotal", "RATotal"]:
+#for sensor in ["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut",
+#               "x_RHandIn", "x_RHandOut", "x_RWristIn", "x_RWristOut",
+#               "x_WaistLBack", "x_WaistRBack"]:# group_LArm+group_RArm:
     dist_max = df_dists[sensor].max()
     dist_min = df_dists[sensor].min()
     print( sensor, dist_min, dist_max )
