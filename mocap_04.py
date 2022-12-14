@@ -224,36 +224,62 @@ df_dists['td'] = pd.to_timedelta(df_dists['Timestamp'], 's') # Create a timedelt
 df_dists = df_dists.set_index(df_dists['td']) # and use it as index
 print( df_dists.head() )
 
-df_dists = df_dists.resample("50ms").mean() # This resamples the 200 Hz to 20 Hz
+# max() works better than mean()
+df_dists = df_dists.resample("100ms").max() # This resamples the 200 Hz to 10 Hz
 print( df_dists.head() )
 
 # NAIVE IMPLEMENTATION OVER DISTANCE GROUPS
 
 # maybe group the st/et's in a new trier, take the "max" extent over the columns to catch
-# "group" movement
+# "group" movement -> resampling helps here!
 
 eaf = pympi.Elan.Eaf(file_path="mocap_valentijn/beach_repr_2.eaf", author='pympi')
 
-for sensor in group_LArm:
+for sensor in group_LArm+group_RArm:
     dist_max = df_dists[sensor].max()
     dist_min = df_dists[sensor].min()
     print( sensor, dist_min, dist_max )
     eaf.add_tier( sensor, ling='default-lt' )
-    threshold = dist_max - (dist_max * 0.80) # take if > "20%"
+    # instead of threshhold, difference in direction, we have that data?
+    threshold = dist_max - (dist_max * 0.90) # take if > "10%"
     inside = False
     st = -1
     et = -1
+    annotations = []
+    previous_annotation = [0, 0]
+    current_annotation = [0, 0]
     for ts, x in zip(df_dists["Timestamp"].values, df_dists[sensor].values):
         if not inside and x > threshold:
-            print( "NEW {:.4f} {:.4f}".format(float(ts), float(x)) )
+            print( "NEW {:.3f} {:.4f}".format(float(ts), float(x)) )
             inside = True
             st = int(ts * 1000) # start time
+            empty_time = st - previous_annotation[1]
+            if empty_time < 1000: #arbitrary...
+                print( "oh, short" )
+                print( " p ", previous_annotation )
+                print( " c ", current_annotation )
+                st = previous_annotation[0]
+                annotations = annotations[:-1]
+            # add to annotations here?
+            current_annotation = [ st ]
+            empty = 0
+            # concat annotations if close to gether? postprocess?
+        elif not inside:
+            pass
         elif inside and x <= threshold:
-            print( "--- {:.4f} {:.4f}".format(float(ts), float(x)) )
+            print( "--- {:.3f} {:.4f}".format(float(ts), float(x)) )
             inside = False
             et = int(ts * 1000)
-            eaf.add_annotation(sensor, st, et, value='Move')
-
+            #eaf.add_annotation(sensor, st, et, value='Move')
+            empty_time = et - previous_annotation[1]
+            previous_annotation = current_annotation
+            current_annotation += [et, empty_time] 
+            annotations.append( current_annotation )
+            current_annotation = []
+    print( annotations )
+    for annotation in annotations:
+        eaf.add_annotation(sensor, annotation[0], annotation[1], value='Move')
+            
 eaf.to_file("mocap_valentijn/beach_repr_2_pb.eaf", pretty=True)
 
 sys.exit(9)
