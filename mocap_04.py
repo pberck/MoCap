@@ -7,13 +7,12 @@ import numpy as np
 from matplotlib.colors import Normalize
 from matplotlib import cm
 import argparse
+import pympi
 
 # Use PYVENV in Development
 # (PYVENV) pberck@ip30-163 MoCap %
 # python mocap_03.py -f mocap_valentijn/beach_repr_2b_velocity_M.tsv -d mocap_valentijn/beach_repr_2b_dists.tsv
 
-# maybe make a diagram with coloured lines from 0 to x seconds, for each sensor
-# a line if above a certain movement threshold.
 # Create/add to an (existing) EAF file.
 
 # Resample!
@@ -25,6 +24,8 @@ parser.add_argument( "-f", "--filename",
                      help="MoCap tsv file (velocities)." )
 parser.add_argument( "-d", "--distsfilename",
                      help="MoCap tsv file (distances, from mocap_gen_distances.py)." )
+parser.add_argument( "-e", "--eaffilename",
+                     help="EAF file to augment." )
 args = parser.parse_args()
 
 '''
@@ -165,7 +166,15 @@ df_dists = pd.read_csv(
     args.distsfilename,
     sep="\t"
 )
+
+df_dists['td'] = pd.to_timedelta(df_dists['Timestamp'], 's')
+df_dists = df_dists.set_index(df_dists['td'])
 print( df_dists.head() )
+
+df_dists = df_dists.resample("1s").mean()
+print( df_dists.head() )
+
+sys.exit(9)
 
 #df['x_LWristOut_vel_M_T'] = np.where( df["x_LWristOut_vel_M"] > 240, 240, 0 )
 
