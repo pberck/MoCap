@@ -1,5 +1,6 @@
 import pandas as pd
 import math
+import sys
 import matplotlib.pyplot as mp
 import matplotlib as mpl
 import matplotlib.dates as dates
@@ -64,13 +65,15 @@ def plot_groups_lr(l_group, r_group, a_df, title=None):
         axes[i, 0].plot(
             a_df["Timestamp"].values,
             a_df[l_group[i]].values,
-            'tab:green'
+            'go-', linewidth=0, markersize=1
+            #'tab:green'
         )
         axes[i, 0].set_title(l_group[i])
         axes[i, 1].plot(
             a_df["Timestamp"].values,
             a_df[r_group[i]].values,
-            'tab:cyan'
+            'co-', linewidth=0, markersize=1
+            #'tab:cyan'
         )
         axes[i, 1].set_title(r_group[i])
     fig.tight_layout()
@@ -167,15 +170,6 @@ df_dists = pd.read_csv(
     sep="\t"
 )
 
-df_dists['td'] = pd.to_timedelta(df_dists['Timestamp'], 's')
-df_dists = df_dists.set_index(df_dists['td'])
-print( df_dists.head() )
-
-df_dists = df_dists.resample("1s").mean()
-print( df_dists.head() )
-
-sys.exit(9)
-
 #df['x_LWristOut_vel_M_T'] = np.where( df["x_LWristOut_vel_M"] > 240, 240, 0 )
 
 # ----------------------------
@@ -223,6 +217,46 @@ group_RArm = ["x_RShoulderBack", "x_RShoulderTop", "x_RArm", "x_RElbowOut", "x_R
 group_Body = ["x_BackL", "x_BackR", "x_Chest", "x_SpineTop", 
               "x_WaistLBack", "x_WaistLFront", "x_WaistRBack", "x_WaistRFront"]
 
+
+# RESAMPLING
+
+df_dists['td'] = pd.to_timedelta(df_dists['Timestamp'], 's') # Create a timedelta column
+df_dists = df_dists.set_index(df_dists['td']) # and use it as index
+print( df_dists.head() )
+
+df_dists = df_dists.resample("50ms").mean() # This resamples the 200 Hz to 20 Hz
+print( df_dists.head() )
+
+# NAIVE IMPLEMENTATION OVER DISTANCE GROUPS
+
+# maybe group the st/et's in a new trier, take the "max" extent over the columns to catch
+# "group" movement
+
+eaf = pympi.Elan.Eaf(file_path="mocap_valentijn/beach_repr_2.eaf", author='pympi')
+
+for sensor in group_LArm:
+    dist_max = df_dists[sensor].max()
+    dist_min = df_dists[sensor].min()
+    print( sensor, dist_min, dist_max )
+    eaf.add_tier( sensor, ling='default-lt' )
+    threshold = dist_max - (dist_max * 0.80) # take if > "20%"
+    inside = False
+    st = -1
+    et = -1
+    for ts, x in zip(df_dists["Timestamp"].values, df_dists[sensor].values):
+        if not inside and x > threshold:
+            print( "NEW {:.4f} {:.4f}".format(float(ts), float(x)) )
+            inside = True
+            st = int(ts * 1000) # start time
+        elif inside and x <= threshold:
+            print( "--- {:.4f} {:.4f}".format(float(ts), float(x)) )
+            inside = False
+            et = int(ts * 1000)
+            eaf.add_annotation(sensor, st, et, value='Move')
+
+eaf.to_file("mocap_valentijn/beach_repr_2_pb.eaf", pretty=True)
+
+sys.exit(9)
 # Group plots
 
 plot_group( group_LHand_M, df, title="Left Hand Sensors" )
