@@ -242,7 +242,11 @@ print( df_dists.head() )
 df_dists['LATotal'] = df_dists[["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut"]].sum(axis=1)
 df_dists['RATotal'] = df_dists[["x_RHandIn", "x_RHandOut", "x_RWristIn", "x_RWristOut"]].sum(axis=1)
 
-eaf = pympi.Elan.Eaf(file_path="mocap_valentijn/beach_repr_2.eaf", author='pympi')
+if not args.eaffilename:
+    print( "No EAF filename specified, quitting." )
+    sys.exit(1)
+
+eaf = pympi.Elan.Eaf(file_path=args.eaffilename, author='mocap_04.py')
 
 for sensor in ["LATotal", "RATotal"]:
 #for sensor in ["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut",
@@ -287,7 +291,6 @@ for sensor in ["LATotal", "RATotal"]:
             et = int(ts * 1000)
             #eaf.add_annotation(sensor, st, et, value='Move')
             empty_time = et - previous_annotation[1] # not used
-            # check for "too short"?
             previous_annotation = current_annotation
             current_annotation += [et, empty_time]
             annotations.append( current_annotation )
