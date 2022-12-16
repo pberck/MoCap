@@ -268,8 +268,8 @@ axes[0].scatter(
 )
 axes[0].legend(loc="upper right")
 
-axes[0].vlines(df_dists["Timestamp"].values,
-               0, 2*df_dists_t["x_LElbowOut_T"].values) # colour according to real value?
+#axes[0].vlines(df_dists["Timestamp"].values,
+#               0, 2*df_dists_t["x_LElbowOut_T"].values) # colour according to real value?
 
 axes[0].scatter(
     df_dists["Timestamp"].values,
