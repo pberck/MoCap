@@ -23,7 +23,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument( "-f", "--filename",
                      help="MoCap tsv file (velocities)." )
 parser.add_argument( "-d", "--distsfilename",
-                     help="MoCap tsv file (distances, from mocap_gen_distances.py)." )
+                     help="MoCap tsv file (distances, from mocap_gen_dists.py)." )
+parser.add_argument( "-r", "--dirsfilename",
+                     help="MoCap tsv file (directions, from mocap_gen_dirs.py)." )
 args = parser.parse_args()
 
 '''
@@ -115,7 +117,6 @@ def plot_groups_combined_stacked(l_group, r_group, a_df, title=None, subtitles=N
 
 # ----------------------------
 
-
 '''
 (PYVENV) pberck@ip30-163 MoCap % head beach_repr_2b_velocity_M.tsv
 NO_OF_FRAMES	20887
@@ -166,6 +167,13 @@ df_dists = pd.read_csv(
     args.distsfilename,
     sep="\t"
 )
+
+# Read the direction data
+if args.dirsfilename:
+    df_dirs = pd.read_csv(
+        args.dirsfilename,
+        sep="\t"
+    )
 
 #df['x_LWristOut_vel_M_T'] = np.where( df["x_LWristOut_vel_M"] > 240, 240, 0 )
 
@@ -364,7 +372,6 @@ plot_groups_combined_stacked(group_LFingers_M, group_RFingers_M, df,
 
 plot_group_combined(group_LFingers_M, df, title="LFingers_M combined") 
 
-mp.show()
 '''
 # For creating new column with multiple conditions
 conditions = [
@@ -383,3 +390,25 @@ choices = [5,5]
 df['points'] = np.select(conditions, choices, default=0)
 print(df)
 '''
+
+'''
+'x_LArm_X_dir', 'x_LArm_Y_dir', 'x_LArm_Z_dir',
+'x_LElbowOut_X_dir', 'x_LElbowOut_Y_dir', 'x_LElbowOut_Z_dir',
+'x_LWristOut_X_dir', 'x_LWristOut_Y_dir', 'x_LWristOut_Z_dir',
+'x_LWristIn_X_dir', 'x_LWristIn_Y_dir', 'x_LWristIn_Z_dir',
+'x_LHandOut_X_dir', 'x_LHandOut_Y_dir', 'x_LHandOut_Z_dir',
+'x_LHandIn_X_dir', 'x_LHandIn_Y_dir', 'x_LHandIn_Z_dir',
+'''
+if args.dirsfilename:
+    group_LArm_dir = []
+    for sensor in group_LArm:
+        for direction in ["_X_dir", "_Y_dir", "_Z_dir"]:
+            group_LArm_dir.append( sensor+direction )
+    group_RArm_dir = []
+    for sensor in group_RArm:
+        for direction in ["_X_dir", "_Y_dir", "_Z_dir"]:
+            group_RArm_dir.append( sensor+direction )
+    plot_group( group_LArm_dir, df_dirs, title="Left Arm Distances" )
+    plot_group( group_RArm_dir, df_dirs, title="Right Arm Distances" )
+
+mp.show()
