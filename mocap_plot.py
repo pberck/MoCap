@@ -401,11 +401,11 @@ print(df)
 '''
 if args.dirsfilename:
     group_LArm_dir = []
-    for sensor in group_LArm:
+    for sensor in ["x_LArm", "x_LHandOut"]: #group_LArm:
         for direction in ["_X_dir", "_Y_dir", "_Z_dir"]:
             group_LArm_dir.append( sensor+direction )
     group_RArm_dir = []
-    for sensor in group_RArm:
+    for sensor in ["x_RArm", "x_RHandOut"]: #group_RArm:
         for direction in ["_X_dir", "_Y_dir", "_Z_dir"]:
             group_RArm_dir.append( sensor+direction )
     plot_group( group_LArm_dir, df_dirs, title="Left Arm Distances" )
