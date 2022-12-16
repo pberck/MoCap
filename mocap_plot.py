@@ -8,11 +8,10 @@ import numpy as np
 from matplotlib.colors import Normalize
 from matplotlib import cm
 import argparse
-import pympi
 
 # Use PYVENV in Development
 # (PYVENV) pberck@ip30-163 MoCap %
-# python mocap_03.py -f mocap_valentijn/beach_repr_2b_velocity_M.tsv -d mocap_valentijn/beach_repr_2b_dists.tsv
+# python mocap_plot.py -f mocap_valentijn/beach_repr_2b_velocity_M.tsv -d mocap_valentijn/beach_repr_2b_dists.tsv
 
 # Create/add to an (existing) EAF file.
 
@@ -25,8 +24,6 @@ parser.add_argument( "-f", "--filename",
                      help="MoCap tsv file (velocities)." )
 parser.add_argument( "-d", "--distsfilename",
                      help="MoCap tsv file (distances, from mocap_gen_distances.py)." )
-parser.add_argument( "-e", "--eaffilename",
-                     help="EAF file to augment." )
 args = parser.parse_args()
 
 '''
@@ -126,7 +123,7 @@ NO_OF_DATA_TYPES	28
 FREQUENCY	200
 TIME_STAMP	2022-11-22, 21:34:11
 DATA_INCLUDED	Velocity
-DATA_TYPES	x_LWristOut_vel_M	X_LWristIn_vel_M	x_LHandOut_vel_M	x_LHandIn_vel_M	x_RWristOut_vel_M	x_RWristIn_vel_M	x_RHandOut_vel_M	x_RHandIn_vel_M	x_RThumb1_vel_M	x_RThumbTip_vel_M	x_RIndex2_vel_M	x_RIndexTip_vel_M	x_RMiddle2_vel_M	x_RMiddleTip_vel_M	x_RRing2_vel_M	x_RRingTip_vel_M	x_RPinky2_vel_M	x_RPinkyTip_vel_M	x_LThumb1_vel_M	x_LThumbTip_vel_M	x_LIndex2_vel_M	x_LIndexTip_vel_M	x_LMiddle2_vel_M	x_LMiddleTip_vel_M	x_LRing2_vel_M	x_LRingTip_vel_M	x_LPinky2_vel_M	x_LPinkyTip_vel_M
+DATA_TYPES	x_LWristOut_vel_M	x_LWristIn_vel_M	x_LHandOut_vel_M	x_LHandIn_vel_M	x_RWristOut_vel_M	x_RWristIn_vel_M	x_RHandOut_vel_M	x_RHandIn_vel_M	x_RThumb1_vel_M	x_RThumbTip_vel_M	x_RIndex2_vel_M	x_RIndexTip_vel_M	x_RMiddle2_vel_M	x_RMiddleTip_vel_M	x_RRing2_vel_M	x_RRingTip_vel_M	x_RPinky2_vel_M	x_RPinkyTip_vel_M	x_LThumb1_vel_M	x_LThumbTip_vel_M	x_LIndex2_vel_M	x_LIndexTip_vel_M	x_LMiddle2_vel_M	x_LMiddleTip_vel_M	x_LRing2_vel_M	x_LRingTip_vel_M	x_LPinky2_vel_M	x_LPinkyTip_vel_M
 
 
 1	0.00000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000
@@ -184,7 +181,8 @@ group_LFingers_M = ["x_LThumb1_vel_M", "x_LThumbTip_vel_M", "x_LIndex2_vel_M", "
                     "x_LMiddle2_vel_M", "x_LMiddleTip_vel_M", "x_LRing2_vel_M", "x_LRingTip_vel_M",
                     "x_LPinky2_vel_M", "x_LPinkyTip_vel_M"]
 
-group_RHand_M    = ["X_RWristOut_vel_M", "x_RWristIn_vel_M", "x_RHandOut_vel_M", "x_RHandIn_vel_M"]
+group_RHand_M    = ["x_RWristOut_vel_M",
+                    "x_RWristIn_vel_M", "x_RHandOut_vel_M", "x_RHandIn_vel_M"]
 
 group_RFingers_M = ["x_RThumb1_vel_M", "x_RThumbTip_vel_M", "x_RIndex2_vel_M", "x_RIndexTip_vel_M",
                     "x_RMiddle2_vel_M", "x_RMiddleTip_vel_M", "x_RRing2_vel_M", "x_RRingTip_vel_M",
@@ -209,13 +207,13 @@ group_LFoot = ["x_LAnkleOut", "x_LForefootIn", "x_LForefootOut", "x_LHeelBack", 
 group_RFoot = ["x_RAnkleOut", "x_RForefootIn", "x_RForefootOut", "x_RHeelBack", "x_RKneeOut",
                "x_RShin", "x_RThigh", "x_RToeTip"]
 
-group_LArm = ["X_LShoulderBack", "x_LShoulderTop", "x_LArm", "x_LElbowOut", "x_LHandIn",
+group_LArm = ["x_LShoulderBack", "x_LShoulderTop", "x_LArm", "x_LElbowOut", "x_LHandIn",
               "x_LHandOut", "x_LWristIn", "x_LWristOut" ]
-group_RArm = ["X_RShoulderBack", "x_RShoulderTop", "x_RArm", "x_RElbowOut", "x_RHandIn",
+group_RArm = ["x_RShoulderBack", "x_RShoulderTop", "x_RArm", "x_RElbowOut", "x_RHandIn",
               "x_RHandOut", "x_RWristIn", "x_RWristOut" ]
 
 group_Body = ["x_BackL", "x_BackR", "x_Chest", "x_SpineTop", 
-              "x_WaistLBack", "x_WaistLFront", "X_WaistRBack", "x_WaistRFront"]
+              "x_WaistLBack", "x_WaistLFront", "x_WaistRBack", "x_WaistRFront"]
 
 
 # RESAMPLING
@@ -228,89 +226,6 @@ print( df_dists.head() )
 df_dists = df_dists.resample("50ms").max() # This resamples the 200 Hz to 20 Hz
 print( df_dists.head() )
 
-# NAIVE IMPLEMENTATION OVER DISTANCE GROUPS
-
-# maybe group the st/et's in a new trier, take the "max" extent over the columns to catch
-# "group" movement -> resampling helps here!
-
-# Take several sensors, put values in one timeseries to "collapse" to one dimension
-# df['total']= df.iloc[:, -4:-1].sum(axis=1)
-# col_list= list(df)
-# col_list.remove('english')
-# df['Sum'] = df[col_list].sum(axis=1)
-
-df_dists['LATotal'] = df_dists[["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut"]].sum(axis=1)
-df_dists['RATotal'] = df_dists[["x_RHandIn", "x_RHandOut", "x_RWristIn", "x_RWristOut"]].sum(axis=1)
-
-if not args.eaffilename:
-    print( "No EAF filename specified, quitting." )
-    sys.exit(1)
-
-eaf = pympi.Elan.Eaf(file_path=args.eaffilename, author='mocap_04.py')
-
-for sensor in ["LATotal", "RATotal"]:
-#for sensor in ["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut",
-#               "x_RHandIn", "x_RHandOut", "x_RWristIn", "x_RWristOut",
-#               "x_WaistLBack", "x_WaistRBack"]:# group_LArm+group_RArm:
-    dist_max = df_dists[sensor].max()
-    dist_min = df_dists[sensor].min()
-    print( sensor, dist_min, dist_max )
-    eaf.add_tier( sensor, ling='default-lt' )
-    # instead of threshhold, difference in direction, we have that data?
-    threshold = dist_max - (dist_max * 0.90) # take if > "10%"
-    inside = False
-    st = -1
-    et = -1
-    annotations = []
-    previous_annotation = [0, 0]
-    current_annotation = [0, 0]
-    for ts, x in zip(df_dists["Timestamp"].values, df_dists[sensor].values):
-    #for ts, x in zip(df_dists.index.values, df_dists[sensor].values): # timedeltas are microseconds
-        if not inside and x > threshold:
-            print( "NEW {:.3f} {:.4f}".format(float(ts), float(x)) )
-            inside = True
-            #st = int(ts / 1000000) # start time
-            st = int(ts * 1000) # start time
-            empty_time = st - previous_annotation[1] # to see if close to previous
-            if empty_time < 200: #arbitrary... 120ms
-                print( "Short" )
-                print( " p ", previous_annotation )
-                print( " c ", current_annotation )
-                st = previous_annotation[0] # cheat, and put the previous start time
-                annotations = annotations[:-1] # and remove previous annotation.
-            # add to annotations here?
-            current_annotation = [ st ] 
-            empty = 0
-            # concat annotations if close to gether? postprocess?
-        elif not inside:
-            pass
-        elif inside and x <= threshold:
-            print( "--- {:.3f} {:.4f}".format(float(ts), float(x)) )
-            inside = False
-            #et = int(ts / 1000000)
-            et = int(ts * 1000)
-            #eaf.add_annotation(sensor, st, et, value='Move')
-            empty_time = et - previous_annotation[1] # not used
-            previous_annotation = current_annotation
-            current_annotation += [et, empty_time]
-            annotations.append( current_annotation )
-            current_annotation = []
-    # we might have lost the last one if it is "inside" until the end.
-    print( annotations )
-    for annotation in annotations:
-        if annotation[1] - annotation[0] > 250:
-            eaf.add_annotation(sensor, annotation[0], annotation[1], value='Move')
-            
-eaf.to_file("mocap_valentijn/beach_repr_2_pb.eaf", pretty=True)
-
-'''
-Merging, list with intervals [start, end]
-Fínd if start within x milliseconds, take the "most left" one
-Find the "most right" one, that is largest in that "group"
-
-'''
-
-sys.exit(9)
 # Group plots
 
 plot_group( group_LHand_M, df, title="Left Hand Sensors" )
