@@ -76,7 +76,7 @@ for row in df_rows[1:]:
     prev_triplets = triplets
     df_dirs_rows.append( new_row )
 
-# Directions, we have three per triplet, so we need the "extended" column names.
+# Directions, we have three per triplet, so we need the new "extended" column names.
 column_names = ["Timestamp"] + new_column_names
 df_dirs      = pd.DataFrame(
     df_dirs_rows,

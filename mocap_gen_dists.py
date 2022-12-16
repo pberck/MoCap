@@ -47,12 +47,6 @@ with open(args.filename, "r") as f:
         if bits[0] == "MARKER_NAMES":
             column_names = bits[1:] # We add a Timestamp later to this one too
             print( column_names )
-            # Expand to 3 coordinates later
-            new_column_names = ["Timestamp"]
-            for col in column_names:
-                for coord in ["_X", "_Y", "_Z"]:
-                    new_column_names.append( col+coord )
-            print( new_column_names )
         if len(bits) > 65:
             bits     = [ float(x) for x in bits ]
             triplets = [bits[i:i + 3] for i in range(2,len(bits)-2, 3)]
