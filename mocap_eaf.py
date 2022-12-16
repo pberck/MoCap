@@ -12,11 +12,9 @@ import pympi
 
 # Use PYVENV in Development
 # (PYVENV) pberck@ip30-163 MoCap %
-# python mocap_03.py -f mocap_valentijn/beach_repr_2b_velocity_M.tsv -d mocap_valentijn/beach_repr_2b_dists.tsv
+# python mocap_eaf.py -d mocap_valentijn/beach_repr_2b_dists.tsv -e ...
 
-# Create/add to an (existing) EAF file.
-
-# Resample!
+# Create/add to an existing EAF file.
 
 # ----------------------------
 
@@ -164,6 +162,7 @@ eaf.to_file("mocap_valentijn/beach_repr_2_pb.eaf", pretty=True)
 Merging, list with intervals [start, end]
 Fínd if start within x milliseconds, take the "most left" one
 Find the "most right" one, that is largest in that "group"
+Or just merge the rows into one.
 '''
 
 
