@@ -38,7 +38,7 @@ with open(args.filename, "r") as f:
             # Expand to 3 coordinates later
             new_column_names = ["Timestamp"]
             for col in column_names:
-                for coord in ["_X", "_Y", "_Z"]:
+                for coord in ["_X_dir", "_Y_dir", "_Z_dir"]:
                     new_column_names.append( col+coord )
             print( new_column_names )
         if len(bits) > 65:
@@ -51,13 +51,17 @@ with open(args.filename, "r") as f:
 # Direction. Should we do some post-processing here?
 # Return a binary vector, if delta larger than threshold?
 # Do we need rotation? Are the delta's along axes?
-sign = lambda x: math.copysign(1, x)
+#sign = lambda x: math.copysign(1, x)
+def sign(n):
+    if abs(n) < 1:
+        return 0
+    return math.copysign(1, n)
+
 def delta(v0, v1):
-    deltas = [ sign(x-y) for x,y in zip(v0, v1) ] # with sign we het -1/0/1
+    deltas = [ sign(x-y) for x,y in zip(v0, v1) ] # with sign we return -1/0/1
     return deltas
 
-df_distances  = []
-df_dirs_rows = [ [0.0] * len(new_column_names) ] # init with zeros for timestamp 000000
+df_dirs_rows  = [ [0.0] * len(new_column_names) ] # init with zeros for timestamp 000000
 row           = df_rows[0]
 prev_triplets = [ row[i:i + 3] for i in range(1,len(row)-1, 3) ]
 #print( prev_triplets )
@@ -74,7 +78,7 @@ for row in df_rows[1:]:
 
 # Directions, we have three per triplet, so we need the "extended" column names.
 column_names = ["Timestamp"] + new_column_names
-df_dirs     = pd.DataFrame(
+df_dirs      = pd.DataFrame(
     df_dirs_rows,
     columns=new_column_names
 )
