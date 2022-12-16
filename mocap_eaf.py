@@ -21,8 +21,6 @@ import pympi
 # ----------------------------
 
 parser = argparse.ArgumentParser()
-parser.add_argument( "-f", "--filename",
-                     help="MoCap tsv file (velocities)." )
 parser.add_argument( "-d", "--distsfilename",
                      help="MoCap tsv file (distances, from mocap_gen_distances.py)." )
 parser.add_argument( "-e", "--eaffilename",
@@ -41,154 +39,13 @@ ls *tsv
 
 # ----------------------------
 
-# Each sensor in a separate plot.
-def plot_group(a_group, a_df, title=None):
-    num_plots = len(a_group)
-    fig, axes = mp.subplots(nrows=num_plots, ncols=1, figsize=(12,6), sharex=True, sharey=True)
-    if title:
-        fig.suptitle( title )
-    for i, sensor in enumerate(a_group):
-        axes[i].plot(
-            a_df["Timestamp"].values,
-            a_df[sensor].values
-        )
-        axes[i].set_title( str(sensor) )
-    fig.tight_layout()
-
-# Similar dataframes, one left, one right.
-def plot_groups_lr(l_group, r_group, a_df, title=None):
-    num_plots = len(l_group) # assume same length
-    fig, axes = mp.subplots(nrows=num_plots, ncols=2, figsize=(12,6), sharex=True, sharey=True)
-    if title:
-        fig.suptitle( title )
-    for i in range(0, num_plots):
-        axes[i, 0].plot(
-            a_df["Timestamp"].values,
-            a_df[l_group[i]].values,
-            'go-', linewidth=0, markersize=1
-            #'tab:green'
-        )
-        axes[i, 0].set_title(l_group[i])
-        axes[i, 1].plot(
-            a_df["Timestamp"].values,
-            a_df[r_group[i]].values,
-            'co-', linewidth=0, markersize=1
-            #'tab:cyan'
-        )
-        axes[i, 1].set_title(r_group[i])
-    fig.tight_layout()
-
-# All sensors in the same plot.
-def plot_group_combined(a_group, a_df, title=None):
-    fig, axes = mp.subplots(nrows=1, ncols=1, figsize=(12,6), sharex=True, sharey=True)
-    if title:
-        fig.suptitle( title )
-    for sensor in a_group:
-        axes.plot(
-            a_df["Timestamp"].values,
-            a_df[sensor].values,
-            label=str(sensor)
-        )
-    axes.legend(loc="upper right", fontsize=8)
-    fig.tight_layout()
-
-# All sensors from two similar dataframes, one up, one down.
-def plot_groups_combined_stacked(l_group, r_group, a_df, title=None, subtitles=None):
-    fig, axes = mp.subplots(nrows=2, ncols=1, figsize=(12,6), sharex=True, sharey=True)
-    if title:
-        fig.suptitle( title )
-    for sensor in l_group:
-        axes[0].plot(
-            a_df["Timestamp"].values,
-            a_df[sensor].values,
-            label=str(sensor)
-        )
-    axes[0].legend(loc="upper right", fontsize=8)
-    for sensor in r_group:
-        axes[1].plot(
-            a_df["Timestamp"].values,
-            a_df[sensor].values,
-            label=str(sensor)
-        )
-    axes[1].legend(loc="upper right", fontsize=8)
-    if subtitles:
-        for i, subtitle in enumerate(subtitles):
-            axes[i].set_title( subtitles[i] )
-    fig.tight_layout()
-
-# ----------------------------
-
-
-'''
-(PYVENV) pberck@ip30-163 MoCap % head beach_repr_2b_velocity_M.tsv
-NO_OF_FRAMES	20887
-NO_OF_DATA_TYPES	28
-FREQUENCY	200
-TIME_STAMP	2022-11-22, 21:34:11
-DATA_INCLUDED	Velocity
-DATA_TYPES	x_LWristOut_vel_M	x_LWristIn_vel_M	x_LHandOut_vel_M	x_LHandIn_vel_M	x_RWristOut_vel_M	x_RWristIn_vel_M	x_RHandOut_vel_M	x_RHandIn_vel_M	x_RThumb1_vel_M	x_RThumbTip_vel_M	x_RIndex2_vel_M	x_RIndexTip_vel_M	x_RMiddle2_vel_M	x_RMiddleTip_vel_M	x_RRing2_vel_M	x_RRingTip_vel_M	x_RPinky2_vel_M	x_RPinkyTip_vel_M	x_LThumb1_vel_M	x_LThumbTip_vel_M	x_LIndex2_vel_M	x_LIndexTip_vel_M	x_LMiddle2_vel_M	x_LMiddleTip_vel_M	x_LRing2_vel_M	x_LRingTip_vel_M	x_LPinky2_vel_M	x_LPinkyTip_vel_M
-
-
-1	0.00000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000
-2	0.00500	12.438	14.483	73.739	109.118	12.927	11.315	11.895	12.532	14.295	14.165	73.827	265.273	191.557	22.159	16.281	16.797	19.674	26.238	161.599	184.912	109.435	119.367	142.256	161.760	164.861	208.077	124.859	144.613
-'''
-
-# Read velocities file.
-df      = None
-df_rows = []
-lnum    = 0
-freq    = 200 # Get from file header.
-with open(args.filename, "r") as f:
-    for line in f:
-        bits = line.split()
-        #print( lnum, len(bits) )
-        if len(bits) > 1:
-            if bits[0] == "FREQUENCY":
-                freq = int(bits[1])
-            if bits[0] == "DATA_TYPES":
-                column_names = bits # We add a Timestamp later to this one too.
-                print( column_names )
-        if len(bits) > 15 and lnum > 7:
-            bits = [ float(x) for x in bits ]
-            df_rows.append( bits[1:] ) #skip index number
-        lnum += 1
-
-# Change the name of the first column to Timestamp.
-column_names[0] = "Timestamp"
-
-# Create the dataframe.
-df = pd.DataFrame(
-    df_rows,
-    columns=column_names
-)
-print( df.head() )
-#df['Time'] = pd.to_datetime(df['Timestamp']) # not used
-
 # Read the distance data
 df_dists = pd.read_csv(
     args.distsfilename,
     sep="\t"
 )
 
-#df['x_LWristOut_vel_M_T'] = np.where( df["x_LWristOut_vel_M"] > 240, 240, 0 )
-
 # ----------------------------
-
-#for x in column_names:
-#    print( x )
-# check for "finger movement only", "hand movement", "arm movement" (not in this data, use distances?)
-
-group_LHand_M    = ["x_LWristOut_vel_M", "x_LWristIn_vel_M", "x_LHandOut_vel_M", "x_LHandIn_vel_M"]
-
-group_LFingers_M = ["x_LThumb1_vel_M", "x_LThumbTip_vel_M", "x_LIndex2_vel_M", "x_LIndexTip_vel_M",
-                    "x_LMiddle2_vel_M", "x_LMiddleTip_vel_M", "x_LRing2_vel_M", "x_LRingTip_vel_M",
-                    "x_LPinky2_vel_M", "x_LPinkyTip_vel_M"]
-
-group_RHand_M    = ["x_RWristOut_vel_M", "x_RWristIn_vel_M", "x_RHandOut_vel_M", "x_RHandIn_vel_M"]
-
-group_RFingers_M = ["x_RThumb1_vel_M", "x_RThumbTip_vel_M", "x_RIndex2_vel_M", "x_RIndexTip_vel_M",
-                    "x_RMiddle2_vel_M", "x_RMiddleTip_vel_M", "x_RRing2_vel_M", "x_RRingTip_vel_M",
-                    "x_RPinky2_vel_M", "x_RPinkyTip_vel_M"]
 
 '''
 print( ",".join(sorted(df_dists.columns)) )
