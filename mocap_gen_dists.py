@@ -7,8 +7,6 @@ import os
 
 # Creates a file with "distances" travelled by the sensors.
 
-mocap_filename = "mocap_valentijn/beach_repr_2b.tsv"
-
 parser = argparse.ArgumentParser()
 parser.add_argument( "-f", "--filename", help="MoCap tsv file (3D positions).",
                      default="mocap_valentijn/beach_repr_2b.tsv" )
