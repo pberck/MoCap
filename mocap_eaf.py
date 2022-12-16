@@ -37,11 +37,20 @@ ls *tsv
 
 # ----------------------------
 
-# Read the distance data
+# Read the distance data and EAF file.
+
+if not args.distsfilename:
+    print( "No dists filename specified, quitting." )
+    sys.exit(1)
 df_dists = pd.read_csv(
     args.distsfilename,
     sep="\t"
 )
+
+if not args.eaffilename:
+    print( "No EAF filename specified, quitting." )
+    sys.exit(1)
+eaf = pympi.Elan.Eaf(file_path=args.eaffilename, author='mocap_eaf.py')
 
 # ----------------------------
 
@@ -97,11 +106,6 @@ print( df_dists.head() )
 df_dists['LATotal'] = df_dists[["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut"]].sum(axis=1)
 df_dists['RATotal'] = df_dists[["x_RHandIn", "x_RHandOut", "x_RWristIn", "x_RWristOut"]].sum(axis=1)
 
-if not args.eaffilename:
-    print( "No EAF filename specified, quitting." )
-    sys.exit(1)
-
-eaf = pympi.Elan.Eaf(file_path=args.eaffilename, author='mocap_04.py')
 
 for sensor in ["LATotal", "RATotal"]:
 #for sensor in ["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut",
