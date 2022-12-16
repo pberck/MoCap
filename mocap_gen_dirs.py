@@ -2,6 +2,7 @@ import pandas as pd
 import math
 import argparse
 import os
+import sys
 
 # Use PYVENV in Development
 
@@ -47,20 +48,16 @@ with open(args.filename, "r") as f:
             #print( bits[0], bits[1], len(triplets), triplets[0], triplets[1] ) #bits[2:2+6] )
         lnum += 1
 
-# Calcuate the distances, save in a new dataframe.
-def dist3d(v0, v1):
-    dist = sum( [ (x-y)*(x-y) for x,y in zip(v0, v1) ] )
-    return math.sqrt( dist )
-
 # Direction. Should we do some post-processing here?
 # Return a binary vector, if delta larger than threshold?
 # Do we need rotation? Are the delta's along axes?
+sign = lambda x: math.copysign(1, x)
 def delta(v0, v1):
-    deltas = [ x-y for x,y in zip(v0, v1) ]
+    deltas = [ sign(x-y) for x,y in zip(v0, v1) ] # with sign we het -1/0/1
     return deltas
 
 df_distances  = []
-df_dists_rows = [ [0.0] * len(column_names) ] # init with zeros for timestamp 000000
+df_dirs_rows = [ [0.0] * len(new_column_names) ] # init with zeros for timestamp 000000
 row           = df_rows[0]
 prev_triplets = [ row[i:i + 3] for i in range(1,len(row)-1, 3) ]
 #print( prev_triplets )
@@ -71,52 +68,24 @@ for row in df_rows[1:]:
     triplets = [ row[i:i + 3] for i in range(1,len(row)-1, 3) ]
     for t0,t1 in zip(triplets, prev_triplets):
         direction = delta( t0, t1 ) # three values
-        new_row.append( direction )
+        new_row += direction 
     prev_triplets = triplets
-    df_dists_rows.append( new_row )
+    df_dirs_rows.append( new_row )
 
-# Distances, use original column names b/c only one dist per "triplet", we add timestamp.
-column_names = ["Timestamp"] + column_names
-df_dists     = pd.DataFrame(
-    df_dists_rows,
-    columns=column_names
+# Directions, we have three per triplet, so we need the "extended" column names.
+column_names = ["Timestamp"] + new_column_names
+df_dirs     = pd.DataFrame(
+    df_dirs_rows,
+    columns=new_column_names
 )
-print( df_dists.head() )
+print( df_dirs.head() )
 
 # Save it
-df_dists.to_csv(
-    dirss_filename,
+df_dirs.to_csv(
+    dirs_filename,
     index=False,
     sep="\t"
 )
-print( "Saved:", dists_filename )
-
-
-
-
-df      = None
-df_rows = []
-lnum    = 0
-freq    = 200 # parse from file header
-
-for row in df_rows[1:]:
-    #print( row )
-    ts       = row[0] # timestamp
-    new_row  = [ ts ]
-    triplets = [ row[i:i + 3] for i in range(1,len(row)-1, 3) ]
-    for t0,t1 in zip(triplets, prev_triplets):
-        dist = dist3d( t0, t1 )
-        new_row.append( dist )
-    prev_triplets = triplets
-    df_dists_rows.append( new_row )
-
-# Distances, use original column names b/c only one dist per "triplet", we add timestamp.
-column_names = ["Timestamp"] + column_names
-df_dists     = pd.DataFrame(
-    df_dists_rows,
-    columns=column_names
-)
-print( df_dists.head() )
-
+print( "Saved:", dirs_filename )
 
 
