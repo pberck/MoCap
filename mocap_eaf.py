@@ -12,7 +12,7 @@ import pympi
 
 # Use PYVENV in Development
 # (PYVENV) pberck@ip30-163 MoCap %
-# python mocap_eaf.py -d mocap_valentijn/beach_repr_2b_dists.tsv -e ...
+# python mocap_eaf.py -d mocap_valentijn/beach_repr_2b_dists.tsv -e mocap_valentijn/beach_repr_2_pb.eaf
 
 # Create/add to an existing EAF file.
 
@@ -105,7 +105,6 @@ print( df_dists.head() )
 
 df_dists['LATotal'] = df_dists[["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut"]].sum(axis=1)
 df_dists['RATotal'] = df_dists[["x_RHandIn", "x_RHandOut", "x_RWristIn", "x_RWristOut"]].sum(axis=1)
-
 
 for sensor in ["LATotal", "RATotal"]:
 #for sensor in ["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut",
