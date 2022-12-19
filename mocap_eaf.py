@@ -112,6 +112,7 @@ for sensor in ["LATotal", "RATotal"]:
 #               "x_WaistLBack", "x_WaistRBack"]:# group_LArm+group_RArm:
     dist_max = df_dists[sensor].max()
     dist_min = df_dists[sensor].min()
+    print()
     print( sensor, dist_min, dist_max )
     eaf.add_tier( sensor, ling='default-lt' )
     # instead of threshhold, difference in direction, we have that data?
@@ -125,15 +126,13 @@ for sensor in ["LATotal", "RATotal"]:
     for ts, x in zip(df_dists["Timestamp"].values, df_dists[sensor].values):
     #for ts, x in zip(df_dists.index.values, df_dists[sensor].values): # timedeltas are microseconds
         if not inside and x > threshold:
-            print( "NEW {:.3f} {:.4f}".format(float(ts), float(x)) )
+            #print( "NEW {:.3f} {:.4f}".format(float(ts), float(x)) )
             inside = True
             #st = int(ts / 1000000) # start time
             st = int(ts * 1000) # start time
             empty_time = st - previous_annotation[1] # to see if close to previous
             if empty_time < 200: #arbitrary... 120ms
-                print( "Short" )
-                print( " p ", previous_annotation )
-                print( " c ", current_annotation )
+                #print( "Short", previous_annotation )
                 st = previous_annotation[0] # cheat, and put the previous start time
                 annotations = annotations[:-1] # and remove previous annotation.
             # add to annotations here?
@@ -143,7 +142,7 @@ for sensor in ["LATotal", "RATotal"]:
         elif not inside:
             pass
         elif inside and x <= threshold:
-            print( "--- {:.3f} {:.4f}".format(float(ts), float(x)) )
+            #print( "--- {:.3f} {:.4f}".format(float(ts), float(x)) )
             inside = False
             #et = int(ts / 1000000)
             et = int(ts * 1000)
