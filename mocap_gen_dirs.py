@@ -64,7 +64,28 @@ def sign(n):
 
 def delta(v0, v1):
     deltas = [ sign(x-y) for x,y in zip(v0, v1) ] # with sign we return -1/0/1
-    return deltas
+    '''
+    dirs = [] # do this in postprocessing/annotation generation.
+    if deltas[0] < 0:
+        dirs.append( "L" ) # X, left
+    elif deltas[0] > 0:
+        dirs.append( "R" ) # X, right
+    else:
+        dirs.append( "-" ) # X, nothing
+    if deltas[1] < 0:
+        dirs.append( "B" ) # Y, backwards
+    elif deltas[1] > 0:
+        dirs.append( "F" ) # Y, fowards
+    else:
+        dirs.append( "-" ) # Y, nothing
+    if deltas[2] < 0:
+        dirs.append( "D" ) # Z, down
+    elif deltas[2] > 0:
+        dirs.append( "U" ) # Z, up
+    else:
+        dirs.append( "-" ) # Z, nothing
+    '''
+    return deltas #dirs
 
 df_dirs_rows  = [ [0.0] * len(new_column_names) ] # init with zeros for timestamp 000000
 row           = df_rows[0]
@@ -75,7 +96,7 @@ for row in df_rows[1:]:
     ts       = row[0] # timestamp
     new_row  = [ ts ]
     triplets = [ row[i:i + 3] for i in range(1,len(row)-1, 3) ]
-    for t0,t1 in zip(triplets, prev_triplets):
+    for t0,t1 in zip(triplets, prev_triplets):# X, Y, Z
         direction = delta( t0, t1 ) # three values
         new_row += direction 
     prev_triplets = triplets
