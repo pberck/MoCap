@@ -23,6 +23,12 @@ parser.add_argument( "-d", "--distsfilename",
                      help="MoCap tsv file (distances, from mocap_gen_distances.py)." )
 parser.add_argument( "-e", "--eaffilename",
                      help="EAF file to augment." )
+parser.add_argument( "-m", "--minimumlength", default=250, type=int,
+                     help="Minimum annotation time in ms. Shorter will be ignored." )
+parser.add_argument( "-g", "--minimumgap", default=120, type=int,
+                     help="Minimum annotation gap in ms. Shorter will be merged" )
+parser.add_argument( "-t", "--threshold", default=0.9, type=float,
+                     help="Movement threshold." )
 args = parser.parse_args()
 
 '''
@@ -106,7 +112,7 @@ print( df_dists.head() )
 df_dists['LATotal'] = df_dists[["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut"]].sum(axis=1)
 df_dists['RATotal'] = df_dists[["x_RHandIn", "x_RHandOut", "x_RWristIn", "x_RWristOut"]].sum(axis=1)
 
-for sensor in ["LATotal", "RATotal"]:
+for sensor in ["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut"]+["x_RHandIn", "x_RHandOut", "x_RWristIn", "x_RWristOut"]+["LATotal", "RATotal"]:
 #for sensor in ["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut",
 #               "x_RHandIn", "x_RHandOut", "x_RWristIn", "x_RWristOut",
 #               "x_WaistLBack", "x_WaistRBack"]:# group_LArm+group_RArm:
@@ -116,7 +122,7 @@ for sensor in ["LATotal", "RATotal"]:
     print( sensor, dist_min, dist_max )
     eaf.add_tier( sensor, ling='default-lt' )
     # instead of threshhold, difference in direction, we have that data?
-    threshold = dist_max - (dist_max * 0.90) # take if > "10%"
+    threshold = dist_max - (dist_max * float(args.threshold)) # take if > "10%"
     inside = False
     st = -1
     et = -1
@@ -131,7 +137,7 @@ for sensor in ["LATotal", "RATotal"]:
             #st = int(ts / 1000000) # start time
             st = int(ts * 1000) # start time
             empty_time = st - previous_annotation[1] # to see if close to previous
-            if empty_time < 200: #arbitrary... 120ms
+            if empty_time < args.minimumgap: #arbitrary... 120ms
                 #print( "Short", previous_annotation )
                 st = previous_annotation[0] # cheat, and put the previous start time
                 annotations = annotations[:-1] # and remove previous annotation.
@@ -147,15 +153,16 @@ for sensor in ["LATotal", "RATotal"]:
             #et = int(ts / 1000000)
             et = int(ts * 1000)
             #eaf.add_annotation(sensor, st, et, value='Move')
-            empty_time = et - previous_annotation[1] # not used
+            annotation_time = et - current_annotation[0]
             previous_annotation = current_annotation
-            current_annotation += [et, empty_time]
+            current_annotation += [et, annotation_time]
             annotations.append( current_annotation )
             current_annotation = []
     # we might have lost the last one if it is "inside" until the end.
-    print( annotations )
+    #print( annotations )
     for annotation in annotations:
-        if annotation[1] - annotation[0] > 250:
+        if annotation[1] - annotation[0] > args.minimumlength:
+            print( annotation )
             eaf.add_annotation(sensor, annotation[0], annotation[1], value='Move')
             
 eaf.to_file("mocap_valentijn/beach_repr_2_pb.eaf", pretty=True)
