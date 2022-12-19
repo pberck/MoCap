@@ -27,8 +27,8 @@ parser.add_argument( "-m", "--minimumlength", default=250, type=int,
                      help="Minimum annotation time in ms. Shorter will be ignored." )
 parser.add_argument( "-g", "--minimumgap", default=120, type=int,
                      help="Minimum annotation gap in ms. Shorter will be merged" )
-parser.add_argument( "-t", "--threshold", default=0.9, type=float,
-                     help="Movement threshold." )
+parser.add_argument( "-t", "--threshold", default=0.1, type=float,
+                     help="Movement threshold, only consider larger than threshold*max" )
 args = parser.parse_args()
 
 '''
@@ -122,7 +122,7 @@ for sensor in ["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut"]+["x_RHand
     print( sensor, dist_min, dist_max )
     eaf.add_tier( sensor, ling='default-lt' )
     # instead of threshhold, difference in direction, we have that data?
-    threshold = dist_max - (dist_max * float(args.threshold)) # take if > "10%"
+    threshold = dist_min + (dist_max * args.threshold) # take if > "10%"
     inside = False
     st = -1
     et = -1
