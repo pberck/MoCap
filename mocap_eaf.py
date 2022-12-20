@@ -25,6 +25,8 @@ parser.add_argument( "-D", "--dirsfilename",
                      help="MoCap tsv file (directions, from mocap_gen_dirs.py)." )
 parser.add_argument( "-e", "--eaffilename",
                      help="EAF file to augment." )
+parser.add_argument( "-E", "--eafoutfilename",
+                     help="EAF file output." )
 parser.add_argument( "-m", "--minimumlength", default=250, type=int,
                      help="Minimum annotation time in ms. Shorter will be ignored." )
 parser.add_argument( "-g", "--minimumgap", default=120, type=int,
@@ -56,10 +58,18 @@ df_dists = pd.read_csv(
 )
 
 if not args.eaffilename:
-    print( "No EAF filename specified, quitting." )
-    sys.exit(1)
-eaf = pympi.Elan.Eaf(file_path=args.eaffilename, author='mocap_eaf.py')
+    print( "No EAF filename specified, creating a new EAF file." )
+    eaf = pympi.Elan.Eaf(author='mocap_eaf.py')
+else:
+    eaf = pympi.Elan.Eaf(file_path=args.eaffilename, author='mocap_eaf.py')
 
+if not args.eafoutfilename:
+    if not args.eaffilename:
+        print( "Need an EAF output filename (-E ...)." )
+        sys.exit(1)
+    else:
+        args.eafoutfilename = args.eaffilename
+        
 # ----------------------------
 
 '''
@@ -176,8 +186,10 @@ Or just merge the rows into one.
 '''
 
 if not args.dirsfilename:
-    print( "No dirs filename specified, quitting." )
+    eaf.to_file(args.eafoutfilename, pretty=True)
+    print( "Wrote", args.eafoutfilename )
     sys.exit(1)
+    
 df_dirs = pd.read_csv(
     args.dirsfilename,
     sep="\t"
@@ -204,7 +216,7 @@ def label(sensor, val):
 
 # We can use the distance groups, as it is the same data
 for group in ["x_RHandOut"]: #group_LArm+group_RArm: #group_Head:
-    for sensor in [group+"_X_dir", group+"_Y_dir", group+"_Z_dir"]:
+    for sensor in [group+"_Y_dir"]:#[group+"_X_dir", group+"_Y_dir", group+"_Z_dir"]:
         dist_max = df_dirs[sensor].max()
         dist_min = df_dirs[sensor].min()
         print()
@@ -263,7 +275,8 @@ for group in ["x_RHandOut"]: #group_LArm+group_RArm: #group_Head:
                 print( "END", current_annotation )
                 annotations.append( current_annotation )
                 current_annotation = []
-            prev_sign = sign # we need to detect "sign flip"
+            if sign != 0:
+                prev_sign = sign # we need to detect "sign flip"
         # we might have lost the last one if it is "inside" until the end.
         #print( annotations )
         for annotation in annotations:
@@ -271,4 +284,5 @@ for group in ["x_RHandOut"]: #group_LArm+group_RArm: #group_Head:
                 print( annotation )
                 eaf.add_annotation(sensor, annotation[0], annotation[1], value=annotation[3])
 
-eaf.to_file("mocap_valentijn/beach_repr_2_pb.eaf", pretty=True)
+eaf.to_file(args.eafoutfilename, pretty=True)
+print( "Wrote", args.eafoutfilename )
