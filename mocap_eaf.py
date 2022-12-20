@@ -145,7 +145,6 @@ for sensor in ["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut"]+["x_RHand
                 annotations = annotations[:-1] # and remove previous annotation.
             # add to annotations here?
             current_annotation = [ st ] 
-            empty = 0
             # concat annotations if close to gether? postprocess?
         elif not inside:
             pass
@@ -167,7 +166,7 @@ for sensor in ["x_LHandIn", "x_LHandOut", "x_LWristIn", "x_LWristOut"]+["x_RHand
             print( annotation )
             eaf.add_annotation(sensor, annotation[0], annotation[1], value='Move')
             
-eaf.to_file("mocap_valentijn/beach_repr_2_pb.eaf", pretty=True)
+#eaf.to_file("mocap_valentijn/beach_repr_2_pb.eaf", pretty=True)
 
 '''
 Merging, list with intervals [start, end]
@@ -185,10 +184,10 @@ df_dirs = pd.read_csv(
 )
 
 # x_HeadL_X_dir, x_HeadL_Y_dir, x_HeadL_Z_dir, etc
-dir_labels = {
+dir_labels = { # "N"egative, "P"ositive values
     'X': {"N":"Right",  "P":"Left"},
-    'Y': {"N":"Foward",  "P":"Backward"},
-    'Z': {"N":"Down",  "P":"Up"}
+    'Y': {"N":"Foward", "P":"Backward"},
+    'Z': {"N":"Down",   "P":"Up"}
 }   
 def label(sensor, val):
     axis = "X"
@@ -203,58 +202,73 @@ def label(sensor, val):
     else:
         return None
 
-for sensor in ["x_HeadL_X_dir", "x_HeadL_Y_dir", "x_HeadL_Z_dir"]:
-    dist_max = df_dirs[sensor].max()
-    dist_min = df_dirs[sensor].min()
-    print()
-    print( sensor, dist_min, dist_max )
-    eaf.add_tier( sensor, ling='default-lt' )
-    # instead of threshhold, difference in direction, we have that data?
-    threshold = dist_min + (dist_max * args.threshold) # take if > "10%"
-    inside = False
-    st = -1
-    et = -1
-    annotations = []
-    previous_annotation = [0, 0]
-    current_annotation = [0, 0]
-    sign = 0
-    prev_sign = 0
-    for ts, x in zip(df_dirs["Timestamp"].values, df_dirs[sensor].values):
-    #for ts, x in zip(df_dirs.index.values, df_dirs[sensor].values): # timedeltas are microseconds
-        if x != 0:
-            sign = math.copysign(1, x) 
-        if not inside and abs(x) > 0: # we need to detect change in sign as well!!
-            #print( "NEW {:.3f} {:.4f}".format(float(ts), float(x)) )
-            inside = True
-            #st = int(ts / 1000000) # start time
-            st = int(ts * 1000) # start time
-            empty_time = st - previous_annotation[1] # to see if close to previous
-            if empty_time < args.minimumgap: #arbitrary... 120ms
-                #print( "Short", previous_annotation )
-                st = previous_annotation[0] # cheat, and put the previous start time
-                annotations = annotations[:-1] # and remove previous annotation.
-            # add to annotations here?
-            current_annotation = [ st ] 
-            empty = 0
-            # concat annotations if close to gether? postprocess?
-        elif not inside:
-            pass
-        elif inside and x == 0:
-            #print( "--- {:.3f} {:.4f}".format(float(ts), float(x)) )
-            inside = False
-            #et = int(ts / 1000000)
-            et = int(ts * 1000)
-            #eaf.add_annotation(sensor, st, et, value='Move')
-            annotation_time = et - current_annotation[0]
-            previous_annotation = current_annotation
-            current_annotation += [et, annotation_time, label(sensor, sign)]
-            annotations.append( current_annotation )
-            current_annotation = []
-    # we might have lost the last one if it is "inside" until the end.
-    #print( annotations )
-    for annotation in annotations:
-        if annotation[1] - annotation[0] > args.minimumlength:
-            print( annotation )
-            eaf.add_annotation(sensor, annotation[0], annotation[1], value=annotation[3])
+# We can use the distance groups, as it is the same data
+for group in ["x_RHandOut"]: #group_LArm+group_RArm: #group_Head:
+    for sensor in [group+"_X_dir", group+"_Y_dir", group+"_Z_dir"]:
+        dist_max = df_dirs[sensor].max()
+        dist_min = df_dirs[sensor].min()
+        print()
+        print( sensor, dist_min, dist_max )
+        eaf.add_tier( sensor, ling='default-lt' )
+        # instead of threshhold, difference in direction, we have that data?
+        threshold = dist_min + (dist_max * args.threshold) # take if > "10%"
+        inside = False
+        st = -1
+        et = -1
+        annotations = []
+        previous_annotation = [0, 0]
+        current_annotation = [0, 0]
+        sign = 0
+        prev_sign = 0
+        current_dir = 0
+        for ts, x in zip(df_dirs["Timestamp"].values, df_dirs[sensor].values):
+        #for ts, x in zip(df_dirs.index.values, df_dirs[sensor].values): # timedeltas are microseconds
+            if x != 0:
+                sign = math.copysign(1, x)
+            if not inside and x != 0: # New annotation
+                inside = True
+                current_dir = label(sensor, sign) # The direction label ("up", etc)
+                print( "NEW {} {:.4f} {}".format(int(ts*1000), float(x), current_dir) )
+                #st = int(ts / 1000000) # start time
+                st = int(ts * 1000) # start time
+                empty_time = st - previous_annotation[1] # to see if close to previous
+                if sign == prev_sign and empty_time < args.minimumgap: #arbitrary...
+                    print( "Short, merge with", previous_annotation )
+                    st = previous_annotation[0] # cheat, and put the previous start time
+                    annotations = annotations[:-1] # and remove previous annotation.
+                # add to annotations here?
+                current_annotation = [ st ]
+                # concat annotations if close to gether? postprocess?
+            elif not inside:
+                pass
+            elif inside and x!=0 and sign != prev_sign:
+                print( "Flip" )
+                # reversal is also an end/start but we stay "inside"
+                et = int(ts * 1000) # end time of the current, ending now
+                st = int(ts * 1000) # start time of the new one, starting now
+                annotation_time = et - current_annotation[0]
+                previous_annotation = current_annotation
+                current_annotation += [et, annotation_time, label(sensor, prev_sign)]
+                annotations.append( current_annotation )
+                current_annotation = [ st ] # new annotation starting here
+            elif inside and x==0:
+                #print( "END {:.3f} {:.4f}".format(float(ts), float(x)) )
+                inside = False
+                #et = int(ts / 1000000)
+                et = int(ts * 1000)
+                #eaf.add_annotation(sensor, st, et, value='Move')
+                annotation_time = et - current_annotation[0]
+                previous_annotation = current_annotation
+                current_annotation += [et, annotation_time, label(sensor, sign)]
+                print( "END", current_annotation )
+                annotations.append( current_annotation )
+                current_annotation = []
+            prev_sign = sign # we need to detect "sign flip"
+        # we might have lost the last one if it is "inside" until the end.
+        #print( annotations )
+        for annotation in annotations:
+            if True or annotation[1] - annotation[0] > args.minimumlength:
+                print( annotation )
+                eaf.add_annotation(sensor, annotation[0], annotation[1], value=annotation[3])
 
 eaf.to_file("mocap_valentijn/beach_repr_2_pb.eaf", pretty=True)
