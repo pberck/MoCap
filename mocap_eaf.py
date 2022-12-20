@@ -216,7 +216,7 @@ def label(sensor, val):
 
 # We can use the distance groups, as it is the same data
 for group in ["x_RHandOut"]: #group_LArm+group_RArm: #group_Head:
-    for sensor in [group+"_Y_dir"]:#[group+"_X_dir", group+"_Y_dir", group+"_Z_dir"]:
+    for sensor in [group+"_X_dir", group+"_Y_dir", group+"_Z_dir"]:
         dist_max = df_dirs[sensor].max()
         dist_min = df_dirs[sensor].min()
         print()
