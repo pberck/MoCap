@@ -1,6 +1,6 @@
 # MoCap 
 
-Files to post-process mocap data for event detection and EAF file generation.
+Files to post-process mocap data for event detection and EAF file generation. Work in progress, needs some clean up.
 
 ### `mocap_gen_dists.py`
 
