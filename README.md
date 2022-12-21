@@ -27,3 +27,11 @@ Example:
 ```shell
 python mocap_plot.py -f mocap_valentijn/beach_repr_2b_velocity_M.tsv -d mocap_valentijn/beach_repr_2b_dists.tsv -r mocap_valentijn/beach_repr_2b_dirs.tsv
 ```
+
+### `mocap_vel_00.py`
+
+Plots velocity file.
+
+### Obsolete
+
+`mocap_cmb_00.py` and `mocap_cmb_01.py`, `mocap_02.py`, `mocap_03.py` and `mocap_04.py` are obsolete.
