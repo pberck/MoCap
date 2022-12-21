@@ -32,6 +32,10 @@ python mocap_plot.py -f mocap_valentijn/beach_repr_2b_velocity_M.tsv -d mocap_va
 
 Plots velocity file.
 
+### `mocap_acc.py`
+
+Plots one of the angular acceleration files (LH).
+
 ### Obsolete
 
 `mocap_cmb_00.py` and `mocap_cmb_01.py`, `mocap_02.py`, `mocap_03.py` and `mocap_04.py` are obsolete.

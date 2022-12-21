@@ -37,7 +37,7 @@ with open(mocap_filename, "r") as f:
             df_rows.append( bits[1:] ) #skip index number
         lnum += 1
 
-column_names = ["Timestamp", "AngAcc"]
+column_names = ["Timestamp", "AngAccLH"]
 df = pd.DataFrame(df_rows, columns = column_names)
 df['Time'] = pd.to_datetime(df['Timestamp'])
 print( df )
