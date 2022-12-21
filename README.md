@@ -26,6 +26,10 @@ Plots sensor data.
 Example:
 ```shell
 python mocap_plot.py -f mocap_valentijn/beach_repr_2b_velocity_M.tsv -d mocap_valentijn/beach_repr_2b_dists.tsv -r mocap_valentijn/beach_repr_2b_dirs.tsv
+
+python mocap_eaf.py -d mocap_valentijn/beach_repr_2b_dists.tsv -D mocap_valentijn/beach_repr_2b_dirs.tsv -E mocap_valentijn/mynew.eaf
+
+python mocap_eaf.py -d mocap_valentijn/beach_repr_2b_dists.tsv -D mocap_valentijn/beach_repr_2b_dirs.tsv 
 ```
 
 ### `mocap_vel_00.py`
