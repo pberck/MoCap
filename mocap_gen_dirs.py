@@ -56,11 +56,7 @@ def sign(n):
     #return n
     if abs(n) < 1:
         return 0
-    if abs(n) < 2:
-        return math.copysign(2, n)
-    if abs(n) < 5:
-        return math.copysign(5, n)
-    return math.copysign(10, n)
+    return n 
 
 def delta(v0, v1):
     deltas = [ sign(x-y) for x,y in zip(v0, v1) ] # with sign we return -1/0/1

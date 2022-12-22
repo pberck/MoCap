@@ -6,9 +6,23 @@ Files to post-process mocap data for event detection and EAF file generation. Wo
 
 Calculates distances travelled by the sensors from the 3D coordinates. 
 
+Example:
+```shell
+python mocap_gen_dists.py -f mocap_valentijn/beach_repr_2b.tsv
+```
+
+The above example creates a `mocap_valentijn/beach_repr_2b_dists.tsv` file containing the 3D distances travelled between each X,Y,Z point of each sensor.
+
 ### `mocap_gen_dirs.py`
 
 Determine the direction of movement from the 3D data. Work-in-progress.
+
+Example:
+```shell
+python mocap_gen_dirs.py -f mocap_valentijn/beach_repr_2b.tsv
+```
+
+The above creates a file called `Saved: mocap_valentijn/beach_repr_2b_dirs.tsv` containing values :-).
 
 ### `mocap_eaf.py`
 
